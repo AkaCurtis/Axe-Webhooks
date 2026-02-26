@@ -1,0 +1,21 @@
+version: "3.7"
+
+services:
+  web:
+    build: ./web
+    restart: unless-stopped
+    ports:
+      - "3456:3456"
+    volumes:
+      - ./data:/data
+    environment:
+      # optional: set to something to require a password for settings page
+      ADMIN_PASSWORD: "${ADMIN_PASSWORD:-}"
+
+  watcher:
+    build: ./watcher
+    restart: unless-stopped
+    volumes:
+      - ./data:/data
+    environment:
+      POLL_SECONDS: "${POLL_SECONDS:-15}"
