@@ -1,5 +1,0 @@
-id: akacurtis-store
-name: AkaCurtis Store
-description: Custom Umbrel apps by AkaCurtis
-apps:
-  - id: ath-monitor
