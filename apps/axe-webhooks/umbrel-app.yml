@@ -1,0 +1,17 @@
+id: axe-webhooks
+name: ATH Monitor
+version: "0.2.0"
+tagline: Worker ATH Discord alerts
+description: Configure node endpoints and Discord webhook via web UI, then monitors workers for new best shares.
+developer: Curtis
+port: 3456
+gallery: []
+releaseNotes: "Adds web UI settings page."
+
+services:
+  - id: web
+    name: Settings UI
+    description: Configure endpoints + webhook
+  - id: watcher
+    name: Watcher
+    description: Background monitor
