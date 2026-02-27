@@ -1,4 +1,4 @@
-id: ath-monitor
+id: axe-webhooks
 name: ATH Monitor
 version: "0.2.0"
 tagline: Worker ATH Discord alerts
