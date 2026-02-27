@@ -9,7 +9,6 @@ services:
     volumes:
       - ./data:/data
     environment:
-      # optional: set to something to require a password for settings page
       ADMIN_PASSWORD: "${ADMIN_PASSWORD:-}"
 
   watcher:
