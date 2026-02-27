@@ -1,0 +1,59 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>ATH Monitor Settings</title>
+  <style>
+    body { font-family: system-ui, sans-serif; margin: 24px; max-width: 760px; }
+    label { display:block; margin-top: 14px; font-weight: 600; }
+    input { width:100%; padding:10px; font-size: 14px; }
+    .row { display:grid; grid-template-columns: 1fr; gap: 10px; }
+    button { margin-top: 18px; padding: 10px 14px; font-size: 15px; cursor:pointer; }
+    .hint { color:#666; font-size: 13px; margin-top:6px; }
+    .warn { background:#fff6e5; padding:10px; border:1px solid #ffd38a; margin-bottom:14px; }
+  </style>
+</head>
+<body>
+  <h1>ATH Monitor Settings</h1>
+
+  {% if needs_pw %}
+    <div class="warn">
+      <b>Password required.</b><br/>
+      Add <code>?pw=YOUR_PASSWORD</code> to the URL, or submit the form with the password field filled.
+    </div>
+  {% endif %}
+
+  <form method="post" action="/save">
+    {% if needs_pw %}
+      <label>Password</label>
+      <input name="pw" type="password" placeholder="Admin password"/>
+    {% endif %}
+
+    <label>BCH Base URL (IP:Port)</label>
+    <input name="bch_base" value="{{ cfg.bch_base }}" placeholder="http://umbrel.local:21212"/>
+    <div class="hint">Example: <code>http://192.168.4.112:21212</code></div>
+
+    <label>XEC Base URL (IP:Port)</label>
+    <input name="xec_base" value="{{ cfg.xec_base }}" placeholder="http://umbrel.local:21218"/>
+
+    <label>BTC Base URL (IP:Port)</label>
+    <input name="btc_base" value="{{ cfg.btc_base }}" placeholder="http://umbrel.local:21215"/>
+
+    <label>DBG Base URL (IP:Port)</label>
+    <input name="dbg_base" value="{{ cfg.dbg_base }}" placeholder="http://umbrel.local:21213"/>
+
+    <label>Umbrel Proxy Token (optional)</label>
+    <input name="proxy_token" value="{{ cfg.proxy_token }}" placeholder="UMBREL_PROXY_TOKEN cookie value"/>
+
+    <label>Discord Webhook URL</label>
+    <input name="discord_webhook" value="{{ cfg.discord_webhook }}" placeholder="https://discord.com/api/webhooks/..."/>
+
+    <button type="submit">Save</button>
+  </form>
+
+  <p class="hint">
+    Settings are saved to <code>/data/config.json</code>. The watcher reads this automatically.
+  </p>
+</body>
+</html>
