@@ -1,4 +1,4 @@
-﻿version: "3.7"
+version: "3.7"
 
 services:
   web:
@@ -9,7 +9,7 @@ services:
     volumes:
       - ./data:/data
     environment:
-      ADMIN_PASSWORD: "${ADMIN_PASSWORD:-}"
+      ADMIN_PASSWORD: ""
 
   watcher:
     build: ./watcher
@@ -17,4 +17,4 @@ services:
     volumes:
       - ./data:/data
     environment:
-      POLL_SECONDS: "${POLL_SECONDS:-15}"
+      POLL_SECONDS: ""
