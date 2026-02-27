@@ -14,8 +14,9 @@ description: >-
 
 developer: Curtis
 website: https://github.com/AkaCurtis
-repo: https://github.com/AkaCurtis/test-axe
-support: https://github.com/AkaCurtis/test-axe/issues
+repo: https://github.com/AkaCurtis/Axe-Webhooks
+support: https://github.com/AkaCurtis/Axe-Webhooks/issues
+
 dependencies: []
 path: ""
 defaultUsername: ""
