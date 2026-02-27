@@ -1,5 +1,3 @@
-id: aka-curtis-store
-name: AkaCurtis Store
-description: Custom Umbrel apps by AkaCurtis
-apps:
-  - id: axe-webhooks
+id: "aka-curtis-store"
+name: "AkaCurtis Store"
+description: "Custom Umbrel apps by AkaCurtis"
