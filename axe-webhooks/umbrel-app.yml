@@ -11,7 +11,7 @@ releaseNotes: "Adds web UI settings page."
 services:
   - id: web
     name: Settings UI
-    description: Configure endpoints + webhook
+   description: Configure endpoints + webhook
   - id: watcher
     name: Watcher
     description: Background monitor
