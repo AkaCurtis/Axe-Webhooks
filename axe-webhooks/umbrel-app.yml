@@ -3,9 +3,8 @@
 id: axe-webhooks
 name: ATH Monitor
 tagline: Worker ATH Discord alerts
-icon: https://svgur.com/i/mvA.svg
-category: Development
 version: "0.2.0"
+category: Development
 port: 3456
 
 description: >-
@@ -13,10 +12,10 @@ description: >-
   then monitors workers for new best shares.
 
 developer: Curtis
-website: https://github.com/AkaCurtis
 repo: https://github.com/AkaCurtis/Axe-Webhooks
 support: https://github.com/AkaCurtis/Axe-Webhooks/issues
-
+gallery: []
+releaseNotes: "Adds web UI settings page."
 dependencies: []
 path: ""
 defaultUsername: ""
