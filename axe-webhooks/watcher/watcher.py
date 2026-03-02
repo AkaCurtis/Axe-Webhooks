@@ -183,6 +183,14 @@ def monitor_chain(chain: str, base_key: str):
         pass
 
     print(f"[{chain}] Monitor started")
+    
+    # Debug: Show stored ATH values on startup
+    if last_bestever:
+        print(f"[{chain}] Stored ATH values from state file:")
+        for worker, ath in last_bestever.items():
+            print(f"  {pretty_worker_name(worker)}: {format_mining_number(ath)}")
+    else:
+        print(f"[{chain}] No stored ATH values yet")
 
     while True:
         try:
@@ -211,6 +219,28 @@ def monitor_chain(chain: str, base_key: str):
             details = workers_data.get("workers_details", [])
             if not isinstance(details, list):
                 details = []
+            
+            # Debug: Show current ATH from pool for all active workers
+            if details:
+                print(f"[{chain}] Current ATH from pool API:")
+                for w in details:
+                    raw_name = str(w.get("workername", "")).strip()
+                    if not raw_name:
+                        continue
+                    bestever = (
+                        w.get("best_share_since_block")
+                        or w.get("bestshare_since_block")
+                        or w.get("bestever_since_block")
+                        or w.get("bestever")
+                    )
+                    if bestever is not None:
+                        try:
+                            bestever_int = int(bestever)
+                            stored_ath = last_bestever.get(raw_name, 0)
+                            status = "(NEW)" if raw_name not in last_bestever else "(tracking)"
+                            print(f"  {pretty_worker_name(raw_name)}: {format_mining_number(bestever_int)} {status} [stored: {format_mining_number(stored_ath)}]")
+                        except Exception:
+                            pass
 
             changed = False
 
