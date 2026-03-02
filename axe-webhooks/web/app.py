@@ -121,8 +121,6 @@ def test_webhook():
     ]
     
     proxy_token = cfg.get("proxy_token", "").strip()
-    # When running inside Umbrel, proxy_token can be empty - Umbrel handles auth automatically.
-    # Only pass the cookie if explicitly configured (for troubleshooting).
     cookies = {"UMBREL_PROXY_TOKEN": proxy_token} if proxy_token else None
     
     fields = []
