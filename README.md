@@ -67,24 +67,26 @@ The proxy token is required to access your local Axe pool APIs. Here's how to ge
 
 #### Method 2: Browser Console
 
-1. Open your Umbrel dashboard in your browser
+1. Open any Axe app in your browser (e.g., `http://umbrel.local:21212/` for AxeBCH)
 2. Open the browser console:
    - **Windows/Linux**: Press `Ctrl + Shift + J`
    - **Mac**: Press `Command + Option + J`
 
 3. Type the following command and press Enter:
    ```javascript
-   document.cookie.split('; ').find(row => row.startsWith('UMBREL_PROXY_TOKEN='))?.split('=')[1] || 'Token not found - make sure you are on the Umbrel dashboard'
+   document.cookie.split('; ').find(row => row.startsWith('UMBREL_PROXY_TOKEN='))?.split('=')[1] || 'Token not found - make sure you are on an Axe app page'
    ```
 
 4. Copy the output value (exclude any quotes)
 
 #### Method 3: Manual Cookie Inspection
 
-1. Navigate to any Axe app on your Umbrel
+1. Navigate to any Axe app on your Umbrel (e.g., `http://umbrel.local:21212/` for AxeBCH)
 2. In the address bar, type: `javascript:alert(document.cookie)`
 3. Look for `UMBREL_PROXY_TOKEN=` in the alert popup
 4. Copy everything after the `=` sign until the next `;`
+
+> **Note**: The token is a JWT that looks like: `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...`
 
 ### Step 3: Get Your Discord Webhook URL
 
