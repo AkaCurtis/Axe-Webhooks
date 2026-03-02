@@ -7,7 +7,7 @@ services:
       APP_PORT: 3456
 
   web:
-    build: ./web
+    build: ${APP_DATA_DIR}/web
     init: true
     restart: on-failure
     stop_grace_period: 1m
@@ -17,7 +17,7 @@ services:
       ADMIN_PASSWORD: "${APP_AXE_WEBHOOKS_ADMIN_PASSWORD:-}"
 
   watcher:
-    build: ./watcher
+    build: ${APP_DATA_DIR}/watcher
     init: true
     restart: on-failure
     stop_grace_period: 1m
