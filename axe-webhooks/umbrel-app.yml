@@ -4,7 +4,7 @@ id: axe-webhooks
 name: ATH Monitor
 tagline: Worker ATH Discord alerts
 category: Development
-version: "0.2.4"
+version: "0.2.5"
 port: 3456
 
 description: >-
@@ -15,7 +15,7 @@ developer: Curtis
 repo: https://github.com/AkaCurtis/Axe-Webhooks
 support: https://github.com/AkaCurtis/Axe-Webhooks/issues
 gallery: []
-releaseNotes: "Fixed: Use multi-stage Docker builds to run as user 1000 throughout."
+releaseNotes: "Fixed: Removed image names to force local Docker builds instead of registry pulls."
 dependencies: []
 path: ""
 defaultUsername: ""

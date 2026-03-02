@@ -7,7 +7,6 @@ services:
       APP_PORT: 3456
 
   web:
-    image: axe-webhooks-web:local
     build: ./web
     init: true
     restart: on-failure
@@ -18,7 +17,6 @@ services:
       ADMIN_PASSWORD: "${APP_AXE_WEBHOOKS_ADMIN_PASSWORD:-}"
 
   watcher:
-    image: axe-webhooks-watcher:local
     build: ./watcher
     init: true
     restart: on-failure
