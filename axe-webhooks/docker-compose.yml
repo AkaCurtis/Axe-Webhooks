@@ -5,6 +5,8 @@ services:
     environment:
       APP_HOST: web
       APP_PORT: 3456
+    depends_on:
+      - web
 
   web:
     build: ${APP_DATA_DIR}/web
