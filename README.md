@@ -28,21 +28,16 @@ Axe Webhooks is an Umbrel app that monitors your mining workers across multiple 
 
 ## 🚀 Installation
 
-### Option 1: Install from Community App Store
+### Install from Community App Store
 
 1. Open your Umbrel dashboard
-2. Go to the App Store
-3. Search for "ATH Monitor" or "Axe Webhooks"
-4. Click Install
-
-### Option 2: Install from GitHub (Development)
-
-1. Clone this repository to your Umbrel's app directory:
-   ```bash
-   git clone https://github.com/AkaCurtis/Axe-Webhooks.git
+2. Go to **App Store** → **Community App Stores**
+3. Add the community app store using this GitHub link:
    ```
-
-2. Install the app via Umbrel CLI or UI
+   https://github.com/AkaCurtis/Axe-Webhooks
+   ```
+4. Once added, find "ATH Monitor" in your app store
+5. Click **Install**
 
 ## ⚙️ Configuration
 
