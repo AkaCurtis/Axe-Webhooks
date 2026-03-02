@@ -74,7 +74,7 @@ The proxy token is required to access your local Axe pool APIs. Here's how to ge
 
 3. Type the following command and press Enter:
    ```javascript
-   document.cookie.split('; ').find(row => row.startsWith('UMBREL_PROXY_TOKEN=')).split('=')[1]
+   document.cookie.split('; ').find(row => row.startsWith('UMBREL_PROXY_TOKEN='))?.split('=')[1] || 'Token not found - make sure you are on the Umbrel dashboard'
    ```
 
 4. Copy the output value (exclude any quotes)
