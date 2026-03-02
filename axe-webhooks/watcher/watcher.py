@@ -76,6 +76,8 @@ def progress_bar(ratio: float, width: int = 18) -> str:
 
 
 def get_json(url: str, proxy_token: str) -> Dict[str, Any]:
+    # When running inside Umbrel, leave proxy_token empty and Umbrel handles auth automatically.
+    # Only pass the cookie if explicitly configured (for troubleshooting).
     cookies = {"UMBREL_PROXY_TOKEN": proxy_token} if proxy_token else None
     r = requests.get(
         url,
