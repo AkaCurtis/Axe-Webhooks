@@ -4,7 +4,7 @@ id: axe-webhooks
 name: ATH Monitor
 tagline: Worker ATH Discord alerts
 category: Development
-version: "0.5.1"
+version: "0.5.2"
 port: 3456
 
 description: >-
@@ -15,7 +15,7 @@ developer: Curtis
 repo: https://github.com/AkaCurtis/Axe-Webhooks
 support: https://github.com/AkaCurtis/Axe-Webhooks/issues
 gallery: []
-releaseNotes: "Fixed: Test webhook now shows correct hashrate (TH/s), single embed with all pools, cleaner error messages."
+releaseNotes: "New: Custom icon with mining chip and trending chart design."
 dependencies: []
 path: ""
 defaultUsername: ""

@@ -1,0 +1,49 @@
+<svg width="512" height="512" viewBox="0 0 512 512" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background gradient -->
+  <defs>
+    <linearGradient id="bg-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" style="stop-color:#667eea;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#764ba2;stop-opacity:1" />
+    </linearGradient>
+    <linearGradient id="chart-gradient" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" style="stop-color:#8dc351;stop-opacity:1" />
+      <stop offset="100%" style="stop-color:#5cb85c;stop-opacity:1" />
+    </linearGradient>
+  </defs>
+  
+  <!-- Background circle -->
+  <circle cx="256" cy="256" r="240" fill="url(#bg-gradient)"/>
+  
+  <!-- Mining chip/circuit icon -->
+  <rect x="140" y="200" width="232" height="232" rx="16" fill="rgba(255,255,255,0.15)" stroke="white" stroke-width="6"/>
+  <circle cx="180" cy="240" r="12" fill="white"/>
+  <circle cx="332" cy="240" r="12" fill="white"/>
+  <circle cx="180" cy="392" r="12" fill="white"/>
+  <circle cx="332" cy="392" r="12" fill="white"/>
+  
+  <!-- Center chip design -->
+  <rect x="200" y="260" width="112" height="112" rx="8" fill="rgba(255,255,255,0.2)" stroke="white" stroke-width="4"/>
+  <line x1="220" y1="280" x2="220" y2="352" stroke="white" stroke-width="3"/>
+  <line x1="256" y1="280" x2="256" y2="352" stroke="white" stroke-width="3"/>
+  <line x1="292" y1="280" x2="292" y2="352" stroke="white" stroke-width="3"/>
+  
+  <!-- Upward trending chart overlay -->
+  <g transform="translate(320, 120)">
+    <circle cx="0" cy="0" r="70" fill="rgba(141, 195, 81, 0.95)"/>
+    <path d="M -35 20 L -15 10 L 0 -5 L 15 0 L 35 -20" 
+          stroke="white" 
+          stroke-width="5" 
+          fill="none" 
+          stroke-linecap="round" 
+          stroke-linejoin="round"/>
+    <polygon points="35,-20 25,-15 30,-25" fill="white"/>
+  </g>
+  
+  <!-- ATH sparkle indicators -->
+  <g transform="translate(140, 160)">
+    <path d="M 0,-15 L -3,-3 L -15,0 L -3,3 L 0,15 L 3,3 L 15,0 L 3,-3 Z" fill="white" opacity="0.9"/>
+  </g>
+  <g transform="translate(360, 400)">
+    <path d="M 0,-12 L -2.5,-2.5 L -12,0 L -2.5,2.5 L 0,12 L 2.5,2.5 L 12,0 L 2.5,-2.5 Z" fill="white" opacity="0.8"/>
+  </g>
+</svg>
