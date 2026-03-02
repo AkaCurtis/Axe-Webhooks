@@ -267,7 +267,7 @@ If you find this app useful and want to support development, donations are great
 
 Every contribution helps maintain and improve ATH Monitor. Thank you for your support! ⚡
 
-## �🙏 Credits
+## 👨‍💻 Credits
 
 Developed by Curtis for the Axe mining community.
 
