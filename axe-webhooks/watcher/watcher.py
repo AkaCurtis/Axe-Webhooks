@@ -185,12 +185,22 @@ def monitor_chain(chain: str, base_key: str):
             base_url = cfg[base_key]
             proxy_token = cfg["proxy_token"]
             webhook = cfg["discord_webhook"]
+            
+            # Skip if base URL is not configured
+            if not base_url or base_url.strip() == "":
+                print(f"[{chain}] Skipping - no URL configured")
+                time.sleep(POLL_SECONDS)
+                continue
 
             workers_url = f"{base_url}/api/pool/workers"
             pool_url = f"{base_url}/api/pool"
+            
+            print(f"[{chain}] Fetching from {base_url}...")
 
             workers_data = get_json(workers_url, proxy_token)
             pool_data = get_json(pool_url, proxy_token)
+            
+            print(f"[{chain}] Got {len(workers_data.get('workers_details', []))} workers")
 
             details = workers_data.get("workers_details", [])
             if not isinstance(details, list):
@@ -221,6 +231,7 @@ def monitor_chain(chain: str, base_key: str):
                 prev = last_bestever.get(raw_name)
 
                 if prev is None:
+                    print(f"[{chain}] Tracking new worker: {pretty_worker_name(raw_name)} (bestever: {format_mining_number(bestever_int)})")
                     last_bestever[raw_name] = bestever_int
                     changed = True
                     continue
