@@ -1,14 +1,18 @@
 version: "3.7"
 
 services:
+  app_proxy:
+    environment:
+      APP_HOST: axe-webhooks_web_1
+      APP_PORT: 3456
+
   web:
     image: axe-webhooks-web:latest
     build:
       context: ./web
-    container_name: axe-webhooks_web_1
-    restart: unless-stopped
-    ports:
-      - "${APP_AXE_WEBHOOKS_WEB_PORT:-3456}:3456"
+    user: "1000:1000"
+    restart: on-failure
+    stop_grace_period: 1m
     volumes:
       - ${APP_DATA_DIR}:/data
     environment:
@@ -18,8 +22,9 @@ services:
     image: axe-webhooks-watcher:latest
     build:
       context: ./watcher
-    container_name: axe-webhooks_watcher_1
-    restart: unless-stopped
+    user: "1000:1000"
+    restart: on-failure
+    stop_grace_period: 1m
     volumes:
       - ${APP_DATA_DIR}:/data
     environment:
