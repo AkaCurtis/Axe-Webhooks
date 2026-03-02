@@ -2,7 +2,7 @@ FROM python:3.12-alpine AS builder
 
 WORKDIR /build
 
-RUN pip install --no-cache-dir flask
+RUN pip install --no-cache-dir flask requests
 
 FROM python:3.12-alpine
 
