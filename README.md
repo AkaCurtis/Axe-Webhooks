@@ -48,43 +48,31 @@ Axe Webhooks is an Umbrel app that monitors your mining workers across multiple 
 
 ### Step 2: Get Your Umbrel Proxy Token
 
-The proxy token is required to access your local Axe pool APIs. Here's how to get it:
+The proxy token is required to access your local Axe pool APIs. The cookie is **HttpOnly** (for security), so you need to use browser DevTools to extract it:
 
-#### Method 1: Browser DevTools (Recommended)
+#### Method 1: Browser DevTools - Cookies (Recommended)
 
-1. Open your Umbrel dashboard in your browser
-2. Open any Axe app (e.g., AxeBCH)
-3. Open Browser Developer Tools:
+1. Open any Axe app in your browser (e.g., `http://umbrel.local:21212/` for AxeBCH)
+2. Open Browser Developer Tools:
    - **Chrome/Edge**: Press `F12` or right-click → "Inspect"
    - **Firefox**: Press `F12` or right-click → "Inspect Element"
    - **Safari**: Enable Developer Menu first, then press `Option + Command + I`
 
-4. Go to the **Application** tab (Chrome/Edge) or **Storage** tab (Firefox)
-5. In the left sidebar, expand **Cookies**
-6. Click on your Umbrel domain (e.g., `http://umbrel.local`)
-7. Find the cookie named `UMBREL_PROXY_TOKEN`
-8. Copy the **Value** (it will be a long alphanumeric string)
+3. Go to the **Application** tab (Chrome/Edge) or **Storage** tab (Firefox)
+4. In the left sidebar, expand **Cookies**
+5. Click on your Umbrel domain (e.g., `http://umbrel.local:21212`)
+6. Find the cookie named `UMBREL_PROXY_TOKEN`
+7. Copy the **Value** (it will be a long JWT token starting with `eyJ...`)
 
-#### Method 2: Browser Console
+#### Method 2: Network Tab - Request Headers
 
-1. Open any Axe app in your browser (e.g., `http://umbrel.local:21212/` for AxeBCH)
-2. Open the browser console:
-   - **Windows/Linux**: Press `Ctrl + Shift + J`
-   - **Mac**: Press `Command + Option + J`
-
-3. Type the following command and press Enter:
-   ```javascript
-   document.cookie.split('; ').find(row => row.startsWith('UMBREL_PROXY_TOKEN='))?.split('=')[1] || 'Token not found - make sure you are on an Axe app page'
-   ```
-
-4. Copy the output value (exclude any quotes)
-
-#### Method 3: Manual Cookie Inspection
-
-1. Navigate to any Axe app on your Umbrel (e.g., `http://umbrel.local:21212/` for AxeBCH)
-2. In the address bar, type: `javascript:alert(document.cookie)`
-3. Look for `UMBREL_PROXY_TOKEN=` in the alert popup
-4. Copy everything after the `=` sign until the next `;`
+1. Open any Axe app in your browser (e.g., `http://umbrel.local:21212/`)
+2. Press `F12` and go to the **Network** tab
+3. Refresh the page or navigate within the app
+4. Click on any request in the list
+5. Look at the **Request Headers** section
+6. Find the `Cookie:` header
+7. Copy the value after `UMBREL_PROXY_TOKEN=` (everything until the next `;` or end of line)
 
 > **Note**: The token is a JWT that looks like: `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...`
 
