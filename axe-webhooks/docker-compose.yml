@@ -7,10 +7,9 @@ services:
       APP_PORT: 3456
 
   web:
-    image: axe-webhooks-web:latest
-    build:
-      context: ./web
-    user: "1000:1000"
+    image: axe-webhooks-web:local
+    build: ./web
+    init: true
     restart: on-failure
     stop_grace_period: 1m
     volumes:
@@ -19,10 +18,9 @@ services:
       ADMIN_PASSWORD: "${APP_AXE_WEBHOOKS_ADMIN_PASSWORD:-}"
 
   watcher:
-    image: axe-webhooks-watcher:latest
-    build:
-      context: ./watcher
-    user: "1000:1000"
+    image: axe-webhooks-watcher:local
+    build: ./watcher
+    init: true
     restart: on-failure
     stop_grace_period: 1m
     volumes:

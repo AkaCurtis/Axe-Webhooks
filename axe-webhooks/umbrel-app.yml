@@ -4,7 +4,7 @@ id: axe-webhooks
 name: ATH Monitor
 tagline: Worker ATH Discord alerts
 category: Development
-version: "0.2.2"
+version: "0.2.3"
 port: 3456
 
 description: >-
@@ -15,7 +15,7 @@ developer: Curtis
 repo: https://github.com/AkaCurtis/Axe-Webhooks
 support: https://github.com/AkaCurtis/Axe-Webhooks/issues
 gallery: []
-releaseNotes: "Fixed: Added required app_proxy service for Umbrel."
+releaseNotes: "Fixed: Corrected Dockerfile permissions and removed user directive from docker-compose."
 dependencies: []
 path: ""
 defaultUsername: ""
