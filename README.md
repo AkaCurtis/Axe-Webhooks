@@ -251,7 +251,7 @@ Contributions are welcome! Please:
 - **Issues**: [GitHub Issues](https://github.com/AkaCurtis/Axe-Webhooks/issues)
 - **Discussions**: [GitHub Discussions](https://github.com/AkaCurtis/Axe-Webhooks/discussions)
 
-## � Support the Project
+## 💰 Support the Project
 
 If you find this app useful and want to support development, donations are greatly appreciated!
 
