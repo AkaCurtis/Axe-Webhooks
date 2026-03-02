@@ -4,7 +4,7 @@ id: axe-webhooks
 name: ATH Monitor
 tagline: Worker ATH Discord alerts
 category: Development
-version: "0.2.0"
+version: "0.2.1"
 port: 3456
 
 description: >-
@@ -15,7 +15,7 @@ developer: Curtis
 repo: https://github.com/AkaCurtis/Axe-Webhooks
 support: https://github.com/AkaCurtis/Axe-Webhooks/issues
 gallery: []
-releaseNotes: "Adds web UI settings page."
+releaseNotes: "Fixed installation issues with missing web service files."
 dependencies: []
 path: ""
 defaultUsername: ""
