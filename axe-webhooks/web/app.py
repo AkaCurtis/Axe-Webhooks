@@ -114,19 +114,19 @@ def test_webhook():
         return jsonify({"success": False, "error": "Discord webhook not configured"}), 400
     
     chains = [
-        ("BCH", cfg.get("bch_base", "").strip(), 0x8DC351, "https://cryptologos.cc/logos/bitcoin-cash-bch-logo.png"),
-        ("XEC", cfg.get("xec_base", "").strip(), 0x0074C2, "https://cryptologos.cc/logos/ecash-xec-logo.png"),
-        ("BTC", cfg.get("btc_base", "").strip(), 0xF7931A, "https://cryptologos.cc/logos/bitcoin-btc-logo.png"),
-        ("DBG", cfg.get("dbg_base", "").strip(), 0xDC3545, "https://via.placeholder.com/150/8B4513/FFFFFF?text=DBG"),
+        ("BCH", cfg.get("bch_base", "").strip()),
+        ("XEC", cfg.get("xec_base", "").strip()),
+        ("BTC", cfg.get("btc_base", "").strip()),
+        ("DBG", cfg.get("dbg_base", "").strip()),
     ]
     
     proxy_token = cfg.get("proxy_token", "").strip()
     cookies = {"UMBREL_PROXY_TOKEN": proxy_token} if proxy_token else None
     
-    embeds = []
+    fields = []
     stats_summary = []
     
-    for chain, base_url, color, thumbnail in chains:
+    for chain, base_url in chains:
         if not base_url:
             continue
         
@@ -144,9 +144,17 @@ def test_webhook():
             workers_data = workers_resp.json()
             
             # Extract stats
-            hashrate = pool_data.get("hashrate", 0)
+            workers_details = workers_data.get("workers_details", [])
+            workers_count = len(workers_details)
             network_diff = pool_data.get("network_difficulty", 0)
-            workers_count = len(workers_data.get("workers_details", []))
+            
+            # Calculate hashrate from workers (in TH/s)
+            hashrate_ths = 0
+            for worker in workers_details:
+                hashrate_ths += float(worker.get("hashrate_ths", 0))
+            
+            # Convert TH/s to H/s for formatting
+            hashrate_hs = hashrate_ths * 1_000_000_000_000  # TH to H
             
             # Format numbers
             def format_num(val):
@@ -161,40 +169,40 @@ def test_webhook():
                 except:
                     return str(val)
             
-            hashrate_fmt = format_num(hashrate) + "H/s"
+            hashrate_fmt = format_num(hashrate_hs) + "H/s"
             diff_fmt = format_num(network_diff)
             
             stats_summary.append(f"**{chain}**: {workers_count} workers, {hashrate_fmt}")
             
-            embeds.append({
-                "title": f"{chain} Pool Status",
-                "color": color,
-                "thumbnail": {"url": thumbnail},
-                "fields": [
-                    {"name": "👷 Workers", "value": f"`{workers_count}`", "inline": True},
-                    {"name": "⚡ Hashrate", "value": f"`{hashrate_fmt}`", "inline": True},
-                    {"name": "🎯 Network Diff", "value": f"`{diff_fmt}`", "inline": True},
-                ],
-                "timestamp": datetime.now(timezone.utc).isoformat(),
+            # Add field for this chain
+            fields.append({
+                "name": f"{'✅' if workers_count > 0 else '⚠️'} {chain} Pool",
+                "value": f"👷 **Workers:** {workers_count}\n⚡ **Hashrate:** {hashrate_fmt}\n🎯 **Difficulty:** {diff_fmt}",
+                "inline": True
             })
             
         except Exception as e:
-            stats_summary.append(f"**{chain}**: Error - {str(e)}")
-            embeds.append({
-                "title": f"{chain} Pool Status",
-                "color": 0xFF0000,
-                "description": f"❌ Error fetching stats: {str(e)}",
-                "timestamp": datetime.now(timezone.utc).isoformat(),
+            stats_summary.append(f"**{chain}**: Offline")
+            fields.append({
+                "name": f"❌ {chain} Pool",
+                "value": "Pool is offline or unreachable.\nMake sure your Axe app is turned on.",
+                "inline": True
             })
     
-    if not embeds:
+    if not fields:
         return jsonify({"success": False, "error": "No pools configured"}), 400
     
-    # Send to Discord
-    payload = {
-        "content": "🧪 **Test Webhook - Current Pool Status**",
-        "embeds": embeds
+    # Send single embed with all pools
+    embed = {
+        "title": "🧪 Test Webhook - Current Pool Status",
+        "description": "Current status of all configured mining pools",
+        "color": 0x667EEA,
+        "fields": fields,
+        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "footer": {"text": "ATH Monitor"}
     }
+    
+    payload = {"embeds": [embed]}
     
     try:
         resp = requests.post(webhook, json=payload, timeout=15)
