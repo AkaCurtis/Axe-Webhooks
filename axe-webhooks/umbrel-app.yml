@@ -3,8 +3,9 @@ manifestVersion: 1
 id: axe-webhooks
 name: ATH Monitor
 tagline: Worker ATH Discord alerts
+icon: https://raw.githubusercontent.com/AkaCurtis/Axe-Webhooks/main/axe-webhooks/icon.svg
 category: Development
-version: "0.5.2"
+version: "0.5.3"
 port: 3456
 
 description: >-
@@ -15,7 +16,7 @@ developer: Curtis
 repo: https://github.com/AkaCurtis/Axe-Webhooks
 support: https://github.com/AkaCurtis/Axe-Webhooks/issues
 gallery: []
-releaseNotes: "New: Custom icon with mining chip and trending chart design."
+releaseNotes: "Fixed: Added icon URL to manifest so app icon displays in Umbrel."
 dependencies: []
 path: ""
 defaultUsername: ""
