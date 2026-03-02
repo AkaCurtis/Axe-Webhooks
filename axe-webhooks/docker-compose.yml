@@ -3,7 +3,7 @@ version: "3.7"
 services:
   app_proxy:
     environment:
-      APP_HOST: axe-webhooks_web_1
+      APP_HOST: web
       APP_PORT: 3456
 
   web:
