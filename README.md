@@ -251,7 +251,23 @@ Contributions are welcome! Please:
 - **Issues**: [GitHub Issues](https://github.com/AkaCurtis/Axe-Webhooks/issues)
 - **Discussions**: [GitHub Discussions](https://github.com/AkaCurtis/Axe-Webhooks/discussions)
 
-## 🙏 Credits
+## � Support the Project
+
+If you find this app useful and want to support development, donations are greatly appreciated!
+
+### Cryptocurrency
+
+- **Bitcoin Cash (BCH)**: `bitcoincash:qpx8jdmgef3z3zj3a4r2p2fykql2stkzpcgnlvy6k6`
+- **Bitcoin (BTC)**: `36hE3rMDd5D3tKXwyBwb6osCaS8WaEobMQ`
+- **eCash (XEC)**: `ecash:qzupqgsekhsc9t0zgkcvt6c6m5k07xrruqx9rz4z9x`
+
+### Fiat
+
+- **CashApp**: [$WRDSY](https://cash.app/$WRDSY)
+
+Every contribution helps maintain and improve ATH Monitor. Thank you for your support! ⚡
+
+## �🙏 Credits
 
 Developed by Curtis for the Axe mining community.
 
