@@ -24,7 +24,6 @@ Axe Webhooks is an Umbrel app that monitors your mining workers across multiple 
 - Umbrel home server
 - Axe mining pool apps installed (AxeBCH, AxeXEC, AxeBTC, and/or AxeDBG)
 - Discord webhook URL
-- Umbrel Proxy Token (for accessing local Axe APIs)
 
 ## 🚀 Installation
 
@@ -46,49 +45,7 @@ Axe Webhooks is an Umbrel app that monitors your mining workers across multiple 
 1. Open Axe Webhooks from your Umbrel apps
 2. The configuration page will load
 
-### Step 2: Get Your Umbrel Proxy Token
-
-The proxy token is required to access your local Axe pool APIs. Here's how to get it:
-
-#### Method 1: Browser DevTools (Recommended)
-
-1. Open your Umbrel dashboard in your browser
-2. Open any Axe app (e.g., AxeBCH)
-3. Open Browser Developer Tools:
-   - **Chrome/Edge**: Press `F12` or right-click → "Inspect"
-   - **Firefox**: Press `F12` or right-click → "Inspect Element"
-   - **Safari**: Enable Developer Menu first, then press `Option + Command + I`
-
-4. Go to the **Application** tab (Chrome/Edge) or **Storage** tab (Firefox)
-5. In the left sidebar, expand **Cookies**
-6. Click on your Umbrel domain (e.g., `http://umbrel.local`)
-7. Find the cookie named `UMBREL_PROXY_TOKEN`
-8. Copy the **Value** (it will be a long alphanumeric string)
-
-#### Method 2: Browser Console
-
-1. Open any Axe app in your browser (e.g., `http://umbrel.local:21212/` for AxeBCH)
-2. Open the browser console:
-   - **Windows/Linux**: Press `Ctrl + Shift + J`
-   - **Mac**: Press `Command + Option + J`
-
-3. Type the following command and press Enter:
-   ```javascript
-   document.cookie.split('; ').find(row => row.startsWith('UMBREL_PROXY_TOKEN='))?.split('=')[1] || 'Token not found - make sure you are on an Axe app page'
-   ```
-
-4. Copy the output value (exclude any quotes)
-
-#### Method 3: Manual Cookie Inspection
-
-1. Navigate to any Axe app on your Umbrel (e.g., `http://umbrel.local:21212/` for AxeBCH)
-2. In the address bar, type: `javascript:alert(document.cookie)`
-3. Look for `UMBREL_PROXY_TOKEN=` in the alert popup
-4. Copy everything after the `=` sign until the next `;`
-
-> **Note**: The token is a JWT that looks like: `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...`
-
-### Step 3: Get Your Discord Webhook URL
+### Step 2: Get Your Discord Webhook URL
 
 1. Open Discord and go to the server where you want notifications
 2. Go to **Server Settings** → **Integrations** → **Webhooks**
@@ -97,7 +54,7 @@ The proxy token is required to access your local Axe pool APIs. Here's how to ge
 5. Click **Copy Webhook URL**
 6. Save the webhook
 
-### Step 4: Configure Pool Endpoints
+### Step 3: Configure Pool Endpoints
 
 In the Axe Webhooks web UI:
 
@@ -109,13 +66,15 @@ In the Axe Webhooks web UI:
    
    You typically won't need to change these unless you have custom ports.
 
-2. **Proxy Token**: Paste the `UMBREL_PROXY_TOKEN` value you copied earlier
+2. **Proxy Token**: Leave this blank! When running inside Umbrel, the app automatically handles authentication. You only need this if you run into authentication errors.
 
 3. **Discord Webhook**: Paste your Discord webhook URL
 
 4. Click **Save Configuration**
 
-### Step 5: Test Your Setup
+> **💡 Pro Tip**: The proxy token field exists for advanced troubleshooting, but Umbrel apps automatically authenticate within the Umbrel network. Just leave it blank!
+
+### Step 4: Test Your Setup
 
 1. Click the **Test Webhook** button in the web UI
 2. Check your Discord channel for a test message showing current pool status
@@ -177,9 +136,28 @@ Configuration and state files are stored in `${APP_DATA_DIR}`:
 ### "Webhook not configured" or "Pool offline" errors
 
 1. **Verify Axe apps are running**: Make sure your AxeBCH, AxeXEC, etc. apps are started
-2. **Check proxy token**: Ensure the token is current (Umbrel may rotate tokens on restart)
-3. **Validate URLs**: Confirm pool URLs match your Umbrel IP and ports
-4. **Test webhook**: Use the Test Webhook button to diagnose issues
+2. **Validate URLs**: Confirm pool URLs match your Umbrel IP and ports
+3. **Test webhook**: Use the Test Webhook button to diagnose issues
+
+### Authentication errors (401/403)
+
+The app should work without a proxy token, but if you're getting authentication errors:
+
+1. **Get your Umbrel Proxy Token**:
+   - Open any Axe app in your browser (e.g., `http://umbrel.local:21212/`)
+   - Press `F12` to open Developer Tools
+   - Go to **Application** → **Cookies** → select your Umbrel domain
+   - Find `UMBREL_PROXY_TOKEN` and copy its value
+   
+   Or use this console command:
+   ```javascript
+   document.cookie.split('; ').find(row => row.startsWith('UMBREL_PROXY_TOKEN='))?.split('=')[1]
+   ```
+
+2. **Enter the token** in the Axe Webhooks web UI and save
+3. **Test again** using the Test Webhook button
+
+> **Note**: The token is a JWT that looks like `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...` and expires after ~7 days
 
 ### Discord notifications not appearing
 
@@ -200,14 +178,6 @@ If the app can't detect your Umbrel IP:
 1. Manually enter your Umbrel server IP in the pool URL fields
 2. Common Umbrel IPs: `192.168.1.X`, `10.0.0.X` (check your router)
 3. You can find your Umbrel IP in: **Umbrel Settings** → **About**
-
-### Proxy token expires
-
-Umbrel may rotate the proxy token after updates or restarts:
-
-1. Get a fresh token using the steps in Configuration
-2. Update it in the Axe Webhooks web UI
-3. Save and test again
 
 ## 📊 Monitored Metrics
 
