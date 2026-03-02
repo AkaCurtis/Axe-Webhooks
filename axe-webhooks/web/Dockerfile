@@ -16,4 +16,4 @@ COPY --chown=1000:1000 templates templates/
 
 EXPOSE 3456
 
-CMD ["python", "app.py"]
+CMD ["python", "-u", "app.py"]

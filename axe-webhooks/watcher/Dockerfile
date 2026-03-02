@@ -15,4 +15,4 @@ WORKDIR /app
 COPY --from=builder /usr/local/lib/python3.12/site-packages /usr/local/lib/python3.12/site-packages
 COPY --chown=1000:1000 watcher.py .
 
-CMD ["python", "watcher.py"]
+CMD ["python", "-u", "watcher.py"]

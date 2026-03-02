@@ -3,8 +3,14 @@ import time
 import json
 import requests
 import threading
+import sys
 from typing import Any, Dict
 from datetime import datetime, timezone
+
+print("=" * 50, flush=True)
+print("ATH Monitor Watcher Starting...", flush=True)
+print("=" * 50, flush=True)
+sys.stdout.flush()
 
 CONFIG_PATH = "/data/config.json"
 
@@ -284,4 +290,11 @@ def main():
 
 
 if __name__ == "__main__":
-    main()
+    try:
+        print("Starting main()...", flush=True)
+        main()
+    except Exception as e:
+        print(f"FATAL ERROR: {e}", flush=True)
+        import traceback
+        traceback.print_exc()
+        sys.exit(1)
