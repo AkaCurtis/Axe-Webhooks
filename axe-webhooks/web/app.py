@@ -11,10 +11,10 @@ ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD", "").strip()
 
 def load_config():
     defaults = {
-        "bch_base": "http://umbrel.local:21212",
-        "xec_base": "http://umbrel.local:21218",
-        "btc_base": "http://umbrel.local:21215",
-        "dbg_base": "http://umbrel.local:21213",
+        "bch_base": "",
+        "xec_base": "",
+        "btc_base": "",
+        "dbg_base": "",
         "proxy_token": "",
         "discord_webhook": "",
     }

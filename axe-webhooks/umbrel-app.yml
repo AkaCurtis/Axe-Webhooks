@@ -4,7 +4,7 @@ id: axe-webhooks
 name: ATH Monitor
 tagline: Worker ATH Discord alerts
 category: Development
-version: "0.4.0"
+version: "0.4.1"
 port: 3456
 
 description: >-
@@ -15,7 +15,7 @@ developer: Curtis
 repo: https://github.com/AkaCurtis/Axe-Webhooks
 support: https://github.com/AkaCurtis/Axe-Webhooks/issues
 gallery: []
-releaseNotes: "New: Test Webhook button - sends current pool stats to Discord to verify configuration."
+releaseNotes: "Fixed: Use IP addresses instead of umbrel.local - Docker containers can't resolve mDNS hostnames."
 dependencies: []
 path: ""
 defaultUsername: ""

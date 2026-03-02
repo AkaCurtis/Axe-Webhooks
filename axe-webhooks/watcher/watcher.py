@@ -16,10 +16,10 @@ POLL_SECONDS = int(os.getenv("POLL_SECONDS", "15"))
 
 def load_config() -> Dict[str, str]:
     defaults = {
-        "bch_base": "http://umbrel.local:21212",
-        "xec_base": "http://umbrel.local:21218",
-        "btc_base": "http://umbrel.local:21215",
-        "dbg_base": "http://umbrel.local:21213",
+        "bch_base": "",
+        "xec_base": "",
+        "btc_base": "",
+        "dbg_base": "",
         "proxy_token": "",
         "discord_webhook": "",
     }
