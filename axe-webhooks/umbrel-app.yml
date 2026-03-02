@@ -4,7 +4,7 @@ id: axe-webhooks
 name: ATH Monitor
 tagline: Worker ATH Discord alerts
 category: Development
-version: "0.4.1"
+version: "0.5.0"
 port: 3456
 
 description: >-
@@ -15,7 +15,7 @@ developer: Curtis
 repo: https://github.com/AkaCurtis/Axe-Webhooks
 support: https://github.com/AkaCurtis/Axe-Webhooks/issues
 gallery: []
-releaseNotes: "Fixed: Use IP addresses instead of umbrel.local - Docker containers can't resolve mDNS hostnames."
+releaseNotes: "New: Auto-detects Umbrel host IP via Docker gateway - no manual IP entry needed!"
 dependencies: []
 path: ""
 defaultUsername: ""

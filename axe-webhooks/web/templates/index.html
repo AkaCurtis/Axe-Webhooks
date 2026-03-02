@@ -98,6 +98,12 @@
           </div>
         {% endif %}
 
+        <div class="alert alert-info">
+          <i class="bi bi-info-circle me-2"></i>
+          <strong>Auto-detected Umbrel IP:</strong> <code>{{ detected_ip }}</code>
+          <br><small class="text-white-50">If ports below are empty, they'll default to this IP.</small>
+        </div>
+
         <form method="post" action="/save">
           {% if needs_pw %}
             <div class="mb-4">
@@ -113,9 +119,9 @@
               <label class="form-label">
                 <span class="crypto-badge badge-bch">BCH</span> Base URL
               </label>
-              <input name="bch_base" value="{{ cfg.bch_base }}" class="form-control" placeholder="http://192.168.1.100:21212"/>
+              <input name="bch_base" value="{{ cfg.bch_base }}" class="form-control" placeholder="http://{{ detected_ip }}:21212"/>
               <div class="hint-text">
-                <i class="bi bi-exclamation-triangle me-1"></i>Use IP address, not umbrel.local (e.g., http://192.168.1.100:21212)
+                <i class="bi bi-cpu me-1"></i>Detected IP: {{ detected_ip }}
               </div>
             </div>
 
@@ -123,21 +129,21 @@
               <label class="form-label">
                 <span class="crypto-badge badge-xec">XEC</span> Base URL
               </label>
-              <input name="xec_base" value="{{ cfg.xec_base }}" class="form-control" placeholder="http://192.168.1.100:21218"/>
+              <input name="xec_base" value="{{ cfg.xec_base }}" class="form-control" placeholder="http://{{ detected_ip }}:21218"/>
             </div>
 
             <div class="col-md-6">
               <label class="form-label">
                 <span class="crypto-badge badge-btc">BTC</span> Base URL
               </label>
-              <input name="btc_base" value="{{ cfg.btc_base }}" class="form-control" placeholder="http://192.168.1.100:21215"/>
+              <input name="btc_base" value="{{ cfg.btc_base }}" class="form-control" placeholder="http://{{ detected_ip }}:21215"/>
             </div>
 
             <div class="col-md-6">
               <label class="form-label">
                 <span class="crypto-badge badge-dbg">DBG</span> Base URL
               </label>
-              <input name="dbg_base" value="{{ cfg.dbg_base }}" class="form-control" placeholder="http://192.168.1.100:21213"/>
+              <input name="dbg_base" value="{{ cfg.dbg_base }}" class="form-control" placeholder="http://{{ detected_ip }}:21213"/>
             </div>
           </div>
 

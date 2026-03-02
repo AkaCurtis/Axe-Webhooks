@@ -1,6 +1,8 @@
 import os
 import json
 import requests
+import socket
+import subprocess
 from datetime import datetime, timezone
 from flask import Flask, render_template, request, redirect, jsonify
 
@@ -9,12 +11,46 @@ app = Flask(__name__)
 CONFIG_PATH = "/data/config.json"
 ADMIN_PASSWORD = os.getenv("ADMIN_PASSWORD", "").strip()
 
+def get_host_ip():
+    """Get the Docker host IP (gateway) where Umbrel is running"""
+    try:
+        # Try to get default gateway (Docker host)
+        result = subprocess.run(
+            ["ip", "route", "show", "default"],
+            capture_output=True,
+            text=True,
+            timeout=2
+        )
+        if result.returncode == 0:
+            # Parse output like: "default via 172.17.0.1 dev eth0"
+            parts = result.stdout.split()
+            if "via" in parts:
+                gateway_ip = parts[parts.index("via") + 1]
+                return gateway_ip
+    except Exception:
+        pass
+    
+    # Fallback: try to detect by connecting to external host
+    try:
+        with socket.socket(socket.AF_INET, socket.SOCK_DGRAM) as s:
+            s.connect(("8.8.8.8", 80))
+            local_ip = s.getsockname()[0]
+            # Gateway is typically .1 in the same subnet
+            parts = local_ip.split(".")
+            parts[-1] = "1"
+            return ".".join(parts)
+    except Exception:
+        pass
+    
+    return "192.168.1.1"  # Final fallback
+
 def load_config():
+    host_ip = get_host_ip()
     defaults = {
-        "bch_base": "",
-        "xec_base": "",
-        "btc_base": "",
-        "dbg_base": "",
+        "bch_base": f"http://{host_ip}:21212",
+        "xec_base": f"http://{host_ip}:21218",
+        "btc_base": f"http://{host_ip}:21215",
+        "dbg_base": f"http://{host_ip}:21213",
         "proxy_token": "",
         "discord_webhook": "",
     }
@@ -22,7 +58,10 @@ def load_config():
         with open(CONFIG_PATH, "r", encoding="utf-8") as f:
             data = json.load(f)
         if isinstance(data, dict):
-            defaults.update(data)
+            # Only use defaults for empty/missing values
+            for key in defaults:
+                if key in data and data[key]:
+                    defaults[key] = data[key]
     except Exception:
         pass
     return defaults
@@ -42,7 +81,8 @@ def index():
     pw = request.args.get("pw", "")
     needs_pw = ADMIN_PASSWORD and not check_password(pw)
     cfg = load_config()
-    return render_template("index.html", cfg=cfg, needs_pw=needs_pw)
+    detected_ip = get_host_ip()
+    return render_template("index.html", cfg=cfg, needs_pw=needs_pw, detected_ip=detected_ip)
 
 @app.route("/save", methods=["POST"])
 def save():
