@@ -229,13 +229,13 @@
               </h6>
               <small class="text-muted">If this tool helps you, consider a BCH donation!</small>
             </div>
-            <a href="bitcoincash:qr5xmdlazclaq7xfpmpcjykz0f0mzyqvuvqqm08v0v" class="donate-btn">
+            <a href="bitcoincash:bitcoincash:qpx8jdmgef3z3zj3a4r2p2fykql2stkzpcgnlvy6k6" class="donate-btn">
               <i class="bi bi-wallet2 me-2"></i>Donate BCH
             </a>
           </div>
           <div class="bch-address mt-3" id="bchAddress" title="Click to copy">
             <small class="text-muted d-block mb-1">BCH Address:</small>
-            qr5xmdlazclaq7xfpmpcjykz0f0mzyqvuvqqm08v0v
+            bitcoincash:qpx8jdmgef3z3zj3a4r2p2fykql2stkzpcgnlvy6k6
           </div>
         </div>
       </div>
@@ -253,7 +253,7 @@
   <script>
     // Copy BCH address to clipboard
     document.getElementById('bchAddress').addEventListener('click', function() {
-      const address = 'qr5xmdlazclaq7xfpmpcjykz0f0mzyqvuvqqm08v0v';
+      const address = 'bitcoincash:qpx8jdmgef3z3zj3a4r2p2fykql2stkzpcgnlvy6k6';
       navigator.clipboard.writeText(address).then(() => {
         const originalText = this.innerHTML;
         this.innerHTML = '<small class="text-success"><i class="bi bi-check-circle me-1"></i>Address copied to clipboard!</small>';
