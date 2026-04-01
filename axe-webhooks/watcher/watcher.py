@@ -227,12 +227,7 @@ def monitor_chain(chain: str, base_key: str):
                     raw_name = str(w.get("workername", "")).strip()
                     if not raw_name:
                         continue
-                    bestever = (
-                        w.get("best_share_since_block")
-                        or w.get("bestshare_since_block")
-                        or w.get("bestever_since_block")
-                        or w.get("bestever")
-                    )
+                    bestever = w.get("bestshare_since_block")
                     if bestever is not None:
                         try:
                             bestever_int = int(bestever)
@@ -249,12 +244,7 @@ def monitor_chain(chain: str, base_key: str):
                 if not raw_name:
                     continue
 
-                bestever = (
-                    w.get("best_share_since_block")
-                    or w.get("bestshare_since_block")
-                    or w.get("bestever_since_block")
-                    or w.get("bestever")
-                )
+                bestever = w.get("bestshare_since_block")
 
                 if bestever is None:
                     continue
