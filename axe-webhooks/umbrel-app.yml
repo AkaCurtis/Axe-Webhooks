@@ -5,7 +5,7 @@ name: ATH Monitor
 tagline: Worker ATH Discord alerts
 icon: https://raw.githubusercontent.com/AkaCurtis/Axe-Webhooks/main/axe-webhooks/icon.svg
 category: Development
-version: "0.6.0"
+version: "0.6.1"
 port: 3456
 
 description: >-
@@ -16,7 +16,7 @@ developer: Curtis
 repo: https://github.com/AkaCurtis/Axe-Webhooks
 support: https://github.com/AkaCurtis/Axe-Webhooks/issues
 gallery: []
-releaseNotes: "Updated Donation address"
+releaseNotes: "Fixed script not pulling the right line in the JSON response"
 dependencies: []
 path: ""
 defaultUsername: ""
