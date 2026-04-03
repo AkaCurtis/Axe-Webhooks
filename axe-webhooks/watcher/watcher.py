@@ -172,25 +172,32 @@ def monitor_chain(chain: str, base_key: str):
 
     state_file = f"/data/{chain.lower()}_state.json"
 
-    last_bestever: Dict[str, int] = {}
+    cycle_best: Dict[str, int] = {}
 
     try:
         with open(state_file, "r") as f:
             d = json.load(f)
             if isinstance(d, dict):
-                last_bestever = d.get("last_bestever", {})
+                stored_cycle_best = d.get("cycle_best")
+                legacy_cycle_best = d.get("last_bestever")
+                raw_cycle_best = stored_cycle_best if isinstance(stored_cycle_best, dict) else legacy_cycle_best
+                if isinstance(raw_cycle_best, dict):
+                    cycle_best = {
+                        str(worker): int(value)
+                        for worker, value in raw_cycle_best.items()
+                    }
     except Exception:
         pass
 
     print(f"[{chain}] Monitor started")
     
-    # Debug: Show stored ATH values on startup
-    if last_bestever:
-        print(f"[{chain}] Stored ATH values from state file:")
-        for worker, ath in last_bestever.items():
+    # Debug: Show stored cycle values on startup
+    if cycle_best:
+        print(f"[{chain}] Stored cycle best values from state file:")
+        for worker, ath in cycle_best.items():
             print(f"  {pretty_worker_name(worker)}: {format_mining_number(ath)}")
     else:
-        print(f"[{chain}] No stored ATH values yet")
+        print(f"[{chain}] No stored cycle values yet")
 
     while True:
         try:
@@ -231,8 +238,8 @@ def monitor_chain(chain: str, base_key: str):
                     if bestever is not None:
                         try:
                             bestever_int = int(bestever)
-                            stored_ath = last_bestever.get(raw_name, 0)
-                            status = "(NEW)" if raw_name not in last_bestever else "(tracking)"
+                            stored_ath = cycle_best.get(raw_name, 0)
+                            status = "(NEW)" if raw_name not in cycle_best else "(tracking)"
                             print(f"  {pretty_worker_name(raw_name)}: {format_mining_number(bestever_int)} {status} [stored: {format_mining_number(stored_ath)}]")
                         except Exception:
                             pass
@@ -254,17 +261,28 @@ def monitor_chain(chain: str, base_key: str):
                 except Exception:
                     continue
 
-                prev = last_bestever.get(raw_name)
+                prev = cycle_best.get(raw_name)
 
                 if prev is None:
-                    print(f"[{chain}] Tracking new worker: {pretty_worker_name(raw_name)} (bestever: {format_mining_number(bestever_int)})")
-                    last_bestever[raw_name] = bestever_int
+                    print(f"[{chain}] Tracking new worker: {pretty_worker_name(raw_name)} (best share since block: {format_mining_number(bestever_int)})")
+                    cycle_best[raw_name] = bestever_int
                     changed = True
                     continue
 
-                if bestever_int > int(prev):
+                prev_int = int(prev)
+
+                if bestever_int < prev_int:
+                    print(
+                        f"[{chain}] Reset detected for {pretty_worker_name(raw_name)}: "
+                        f"{format_mining_number(prev_int)} -> {format_mining_number(bestever_int)}"
+                    )
+                    cycle_best[raw_name] = bestever_int
+                    changed = True
+                    continue
+
+                if bestever_int > prev_int:
                     display = pretty_worker_name(raw_name)
-                    print(f"[{chain}] ATH {display}: {format_mining_number(prev)} → {format_mining_number(bestever_int)}")
+                    print(f"[{chain}] Cycle ATH {display}: {format_mining_number(prev_int)} -> {format_mining_number(bestever_int)}")
 
                     try:
                         discord_post_ath(display, bestever_int, w, pool_data, chain, webhook)
@@ -272,12 +290,12 @@ def monitor_chain(chain: str, base_key: str):
                     except Exception as e:
                         print(f"[{chain}] Discord failed: {e}")
 
-                    last_bestever[raw_name] = bestever_int
+                    cycle_best[raw_name] = bestever_int
                     changed = True
 
             if changed:
                 with open(state_file + ".tmp", "w") as f:
-                    json.dump({"last_bestever": last_bestever}, f)
+                    json.dump({"cycle_best": cycle_best}, f)
                 os.replace(state_file + ".tmp", state_file)
 
         except Exception as e:
