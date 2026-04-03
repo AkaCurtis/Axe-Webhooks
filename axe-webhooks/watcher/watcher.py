@@ -106,6 +106,14 @@ def summarize_workers(details: list[Dict[str, Any]], limit: int = 5) -> str:
     return ", ".join(names) + suffix
 
 
+def summarize_names(names: list[str], limit: int = 5) -> str:
+    pretty_names = [pretty_worker_name(name) for name in names[:limit]]
+    if not pretty_names:
+        return "none"
+    suffix = "" if len(names) <= limit else f" ... +{len(names) - limit} more"
+    return ", ".join(pretty_names) + suffix
+
+
 def get_json(url: str, proxy_token: str) -> Dict[str, Any]:
     cookies = {"UMBREL_PROXY_TOKEN": proxy_token} if proxy_token else None
     r = requests.get(
@@ -274,63 +282,77 @@ def monitor_chain(chain: str, base_key: str):
 
             log(f"Fetched {len(details)} workers: {summarize_workers(details)}", chain)
 
-            changed = False
-
+            current_best: Dict[str, int] = {}
             for w in details:
                 raw_name = str(w.get("workername", "")).strip()
                 if not raw_name:
                     continue
 
                 bestever = w.get("bestshare_since_block")
-
                 if bestever is None:
                     continue
 
                 try:
-                    bestever_int = int(bestever)
+                    current_best[raw_name] = int(bestever)
                 except Exception:
                     continue
 
-                prev = cycle_best.get(raw_name)
+            reset_workers = [
+                raw_name
+                for raw_name, bestever_int in current_best.items()
+                if raw_name in cycle_best and bestever_int < int(cycle_best[raw_name])
+            ]
 
-                if prev is None:
-                    log(
-                        f"Tracking new worker {pretty_worker_name(raw_name)} at "
-                        f"{format_mining_number(bestever_int)}",
-                        chain,
-                    )
-                    cycle_best[raw_name] = bestever_int
-                    changed = True
-                    continue
+            changed = False
 
-                prev_int = int(prev)
+            if reset_workers:
+                log(
+                    f"New round detected. Re-basing cycle best for "
+                    f"{summarize_names(reset_workers)}",
+                    chain,
+                )
+                cycle_best.update(current_best)
+                changed = True
+            else:
+                for w in details:
+                    raw_name = str(w.get("workername", "")).strip()
+                    if not raw_name:
+                        continue
 
-                if bestever_int < prev_int:
-                    log(
-                        f"Reset detected for {pretty_worker_name(raw_name)}: "
-                        f"{format_mining_number(prev_int)} -> {format_mining_number(bestever_int)}",
-                        chain,
-                    )
-                    cycle_best[raw_name] = bestever_int
-                    changed = True
-                    continue
+                    bestever_int = current_best.get(raw_name)
+                    if bestever_int is None:
+                        continue
 
-                if bestever_int > prev_int:
-                    display = pretty_worker_name(raw_name)
-                    log(
-                        f"Cycle best increased for {display}: "
-                        f"{format_mining_number(prev_int)} -> {format_mining_number(bestever_int)}",
-                        chain,
-                    )
+                    prev = cycle_best.get(raw_name)
 
-                    try:
-                        discord_post_ath(display, bestever_int, w, pool_data, chain, webhook)
-                        log(f"Discord alert sent for {display}", chain)
-                    except Exception as e:
-                        log(f"Discord alert failed for {display}: {e}", chain)
+                    if prev is None:
+                        log(
+                            f"Tracking new worker {pretty_worker_name(raw_name)} at "
+                            f"{format_mining_number(bestever_int)}",
+                            chain,
+                        )
+                        cycle_best[raw_name] = bestever_int
+                        changed = True
+                        continue
 
-                    cycle_best[raw_name] = bestever_int
-                    changed = True
+                    prev_int = int(prev)
+
+                    if bestever_int > prev_int:
+                        display = pretty_worker_name(raw_name)
+                        log(
+                            f"Cycle best increased for {display}: "
+                            f"{format_mining_number(prev_int)} -> {format_mining_number(bestever_int)}",
+                            chain,
+                        )
+
+                        try:
+                            discord_post_ath(display, bestever_int, w, pool_data, chain, webhook)
+                            log(f"Discord alert sent for {display}", chain)
+                        except Exception as e:
+                            log(f"Discord alert failed for {display}: {e}", chain)
+
+                        cycle_best[raw_name] = bestever_int
+                        changed = True
 
             if changed:
                 with open(state_file + ".tmp", "w") as f:
