@@ -7,14 +7,26 @@ import sys
 from typing import Any, Dict
 from datetime import datetime, timezone
 
-print("=" * 50, flush=True)
-print("ATH Monitor Watcher Starting...", flush=True)
-print("=" * 50, flush=True)
-sys.stdout.flush()
-
 CONFIG_PATH = "/data/config.json"
 
 POLL_SECONDS = int(os.getenv("POLL_SECONDS", "15"))
+
+LOG_LOCK = threading.Lock()
+
+
+def log(message: str, chain: str | None = None) -> None:
+    timestamp = datetime.now().strftime("%Y-%m-%d %H:%M:%S")
+    prefix = f"[{timestamp}]"
+    if chain:
+        prefix = f"{prefix} [{chain}]"
+    with LOG_LOCK:
+        print(f"{prefix} {message}", flush=True)
+        sys.stdout.flush()
+
+
+log("=" * 50)
+log("ATH Monitor Watcher Starting...")
+log("=" * 50)
 
 # -----------------------------
 # Config Loader
@@ -75,6 +87,25 @@ def progress_bar(ratio: float, width: int = 18) -> str:
     return f"`{bar}` **{pct:.2f}%**"
 
 
+def shorten_text(text: str, limit: int = 400) -> str:
+    cleaned = " ".join(text.split())
+    if len(cleaned) <= limit:
+        return cleaned
+    return cleaned[: limit - 3] + "..."
+
+
+def summarize_workers(details: list[Dict[str, Any]], limit: int = 5) -> str:
+    names = []
+    for worker in details[:limit]:
+        raw_name = str(worker.get("workername", "")).strip()
+        if raw_name:
+            names.append(pretty_worker_name(raw_name))
+    if not names:
+        return "no named workers"
+    suffix = "" if len(details) <= limit else f" ... +{len(details) - limit} more"
+    return ", ".join(names) + suffix
+
+
 def get_json(url: str, proxy_token: str) -> Dict[str, Any]:
     cookies = {"UMBREL_PROXY_TOKEN": proxy_token} if proxy_token else None
     r = requests.get(
@@ -83,8 +114,26 @@ def get_json(url: str, proxy_token: str) -> Dict[str, Any]:
         headers={"Accept": "application/json"},
         timeout=15,
     )
-    r.raise_for_status()
-    data = r.json()
+
+    try:
+        r.raise_for_status()
+    except requests.HTTPError as exc:
+        body = ""
+        try:
+            body_text = shorten_text(r.text)
+            if body_text:
+                body = f" | body: {body_text}"
+        except Exception:
+            pass
+        raise RuntimeError(f"HTTP {r.status_code} for {url}{body}") from exc
+
+    try:
+        data = r.json()
+    except ValueError as exc:
+        body_text = shorten_text(r.text)
+        body = f" | body: {body_text}" if body_text else ""
+        raise RuntimeError(f"Invalid JSON from {url}{body}") from exc
+
     return data if isinstance(data, dict) else {"_raw": data}
 
 
@@ -105,7 +154,7 @@ def discord_post_ath(display: str, bestever: int, worker_data: Dict[str, Any],
                      webhook: str):
 
     if not webhook:
-        print(f"[Discord][{chain}] Webhook not set")
+        log("Discord webhook not set", chain)
         return
 
     colors = {
@@ -189,15 +238,14 @@ def monitor_chain(chain: str, base_key: str):
     except Exception:
         pass
 
-    print(f"[{chain}] Monitor started")
+    log("Monitor started", chain)
     
-    # Debug: Show stored cycle values on startup
     if cycle_best:
-        print(f"[{chain}] Stored cycle best values from state file:")
+        log("Stored cycle best values from state file:", chain)
         for worker, ath in cycle_best.items():
-            print(f"  {pretty_worker_name(worker)}: {format_mining_number(ath)}")
+            log(f"{pretty_worker_name(worker)}: {format_mining_number(ath)}", chain)
     else:
-        print(f"[{chain}] No stored cycle values yet")
+        log("No stored cycle values yet", chain)
 
     while True:
         try:
@@ -207,42 +255,24 @@ def monitor_chain(chain: str, base_key: str):
             proxy_token = cfg["proxy_token"]
             webhook = cfg["discord_webhook"]
             
-            # Skip if base URL is not configured
             if not base_url or base_url.strip() == "":
-                print(f"[{chain}] Skipping - no URL configured")
+                log("Skipping poll because no URL is configured", chain)
                 time.sleep(POLL_SECONDS)
                 continue
 
             workers_url = f"{base_url}/api/pool/workers"
             pool_url = f"{base_url}/api/pool"
             
-            print(f"[{chain}] Fetching from {base_url}...")
+            log(f"Polling {base_url}", chain)
 
             workers_data = get_json(workers_url, proxy_token)
             pool_data = get_json(pool_url, proxy_token)
-            
-            print(f"[{chain}] Got {len(workers_data.get('workers_details', []))} workers")
 
             details = workers_data.get("workers_details", [])
             if not isinstance(details, list):
                 details = []
-            
-            # Debug: Show current ATH from pool for all active workers
-            if details:
-                print(f"[{chain}] Current ATH from pool API:")
-                for w in details:
-                    raw_name = str(w.get("workername", "")).strip()
-                    if not raw_name:
-                        continue
-                    bestever = w.get("bestshare_since_block")
-                    if bestever is not None:
-                        try:
-                            bestever_int = int(bestever)
-                            stored_ath = cycle_best.get(raw_name, 0)
-                            status = "(NEW)" if raw_name not in cycle_best else "(tracking)"
-                            print(f"  {pretty_worker_name(raw_name)}: {format_mining_number(bestever_int)} {status} [stored: {format_mining_number(stored_ath)}]")
-                        except Exception:
-                            pass
+
+            log(f"Fetched {len(details)} workers: {summarize_workers(details)}", chain)
 
             changed = False
 
@@ -264,7 +294,11 @@ def monitor_chain(chain: str, base_key: str):
                 prev = cycle_best.get(raw_name)
 
                 if prev is None:
-                    print(f"[{chain}] Tracking new worker: {pretty_worker_name(raw_name)} (best share since block: {format_mining_number(bestever_int)})")
+                    log(
+                        f"Tracking new worker {pretty_worker_name(raw_name)} at "
+                        f"{format_mining_number(bestever_int)}",
+                        chain,
+                    )
                     cycle_best[raw_name] = bestever_int
                     changed = True
                     continue
@@ -272,9 +306,10 @@ def monitor_chain(chain: str, base_key: str):
                 prev_int = int(prev)
 
                 if bestever_int < prev_int:
-                    print(
-                        f"[{chain}] Reset detected for {pretty_worker_name(raw_name)}: "
-                        f"{format_mining_number(prev_int)} -> {format_mining_number(bestever_int)}"
+                    log(
+                        f"Reset detected for {pretty_worker_name(raw_name)}: "
+                        f"{format_mining_number(prev_int)} -> {format_mining_number(bestever_int)}",
+                        chain,
                     )
                     cycle_best[raw_name] = bestever_int
                     changed = True
@@ -282,13 +317,17 @@ def monitor_chain(chain: str, base_key: str):
 
                 if bestever_int > prev_int:
                     display = pretty_worker_name(raw_name)
-                    print(f"[{chain}] Cycle ATH {display}: {format_mining_number(prev_int)} -> {format_mining_number(bestever_int)}")
+                    log(
+                        f"Cycle best increased for {display}: "
+                        f"{format_mining_number(prev_int)} -> {format_mining_number(bestever_int)}",
+                        chain,
+                    )
 
                     try:
                         discord_post_ath(display, bestever_int, w, pool_data, chain, webhook)
-                        print(f"[{chain}] Discord sent")
+                        log(f"Discord alert sent for {display}", chain)
                     except Exception as e:
-                        print(f"[{chain}] Discord failed: {e}")
+                        log(f"Discord alert failed for {display}: {e}", chain)
 
                     cycle_best[raw_name] = bestever_int
                     changed = True
@@ -297,9 +336,10 @@ def monitor_chain(chain: str, base_key: str):
                 with open(state_file + ".tmp", "w") as f:
                     json.dump({"cycle_best": cycle_best}, f)
                 os.replace(state_file + ".tmp", state_file)
+                log(f"Saved state for {len(cycle_best)} workers", chain)
 
         except Exception as e:
-            print(f"[{chain}] Error: {e}")
+            log(f"Poll failed: {e}", chain)
 
         time.sleep(POLL_SECONDS)
 
@@ -309,9 +349,9 @@ def monitor_chain(chain: str, base_key: str):
 # -----------------------------
 
 def main():
-    print("Multi-Chain ATH Monitor")
-    print(f"Polling every {POLL_SECONDS}s")
-    print("=" * 40)
+    log("Multi-Chain ATH Monitor")
+    log(f"Polling every {POLL_SECONDS}s")
+    log("=" * 40)
 
     threads = [
         threading.Thread(target=monitor_chain, args=("BCH", "bch_base"), daemon=True),
@@ -329,10 +369,10 @@ def main():
 
 if __name__ == "__main__":
     try:
-        print("Starting main()...", flush=True)
+        log("Starting main()...")
         main()
     except Exception as e:
-        print(f"FATAL ERROR: {e}", flush=True)
+        log(f"FATAL ERROR: {e}")
         import traceback
         traceback.print_exc()
         sys.exit(1)
