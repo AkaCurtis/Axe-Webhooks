@@ -5,18 +5,23 @@ name: ATH Monitor
 tagline: Worker ATH Discord alerts
 icon: https://raw.githubusercontent.com/AkaCurtis/Axe-Webhooks/main/axe-webhooks/icon.svg
 category: Development
-version: "0.6.5"
+version: "0.6.6"
 port: 3456
 
 description: >-
   Configure node endpoints and Discord webhook via web UI,
-  then monitors workers for new best shares.
+  then monitor workers for new best shares.
 
 developer: Curtis
 repo: https://github.com/AkaCurtis/Axe-Webhooks
 support: https://github.com/AkaCurtis/Axe-Webhooks/issues
 gallery: []
-releaseNotes: "Changed round reset handling to re-base cycle-best values per worker instead of batch-resetting the whole state. This fixes cases where a worker resets from a found block or stat reset and ensures new alerts resume immediately from the worker's new baseline."
+releaseNotes: >-
+  Fixed worker round-reset tracking. The watcher now re-bases cycle-best values
+  per worker whenever bestshare_since_block drops, instead of relying on a
+  batch reset. This fixes missed alerts after a worker finds a block or stats
+  are manually reset, allowing new ATH alerts to resume immediately from the
+  worker's new baseline.
 dependencies: []
 path: ""
 defaultUsername: ""
