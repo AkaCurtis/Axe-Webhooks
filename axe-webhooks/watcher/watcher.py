@@ -297,62 +297,64 @@ def monitor_chain(chain: str, base_key: str):
                 except Exception:
                     continue
 
-            reset_workers = [
-                raw_name
-                for raw_name, bestever_int in current_best.items()
-                if raw_name in cycle_best and bestever_int < int(cycle_best[raw_name])
-            ]
-
             changed = False
 
-            if reset_workers:
-                log(
-                    f"New round detected. Re-basing cycle best for "
-                    f"{summarize_names(reset_workers)}",
-                    chain,
-                )
-                cycle_best.update(current_best)
+            stale_workers = [name for name in list(cycle_best.keys()) if name not in current_best]
+            for stale in stale_workers:
+                log(f"Removing stale worker from state: {pretty_worker_name(stale)}", chain)
+                del cycle_best[stale]
                 changed = True
-            else:
-                for w in details:
-                    raw_name = str(w.get("workername", "")).strip()
-                    if not raw_name:
-                        continue
 
-                    bestever_int = current_best.get(raw_name)
-                    if bestever_int is None:
-                        continue
+            for w in details:
+                raw_name = str(w.get("workername", "")).strip()
+                if not raw_name:
+                    continue
 
-                    prev = cycle_best.get(raw_name)
+                bestever_int = current_best.get(raw_name)
+                if bestever_int is None:
+                    continue
 
-                    if prev is None:
-                        log(
-                            f"Tracking new worker {pretty_worker_name(raw_name)} at "
-                            f"{format_mining_number(bestever_int)}",
-                            chain,
-                        )
-                        cycle_best[raw_name] = bestever_int
-                        changed = True
-                        continue
+                prev = cycle_best.get(raw_name)
 
-                    prev_int = int(prev)
+                if prev is None:
+                    log(
+                        f"Tracking new worker {pretty_worker_name(raw_name)} at "
+                        f"{format_mining_number(bestever_int)}",
+                        chain,
+                    )
+                    cycle_best[raw_name] = bestever_int
+                    changed = True
+                    continue
 
-                    if bestever_int > prev_int:
-                        display = pretty_worker_name(raw_name)
-                        log(
-                            f"Cycle best increased for {display}: "
-                            f"{format_mining_number(prev_int)} -> {format_mining_number(bestever_int)}",
-                            chain,
-                        )
+                prev_int = int(prev)
 
-                        try:
-                            discord_post_ath(display, bestever_int, w, pool_data, chain, webhook)
-                            log(f"Discord alert sent for {display}", chain)
-                        except Exception as e:
-                            log(f"Discord alert failed for {display}: {e}", chain)
+                if bestever_int < prev_int:
+                    log(
+                        f"Reset detected for {pretty_worker_name(raw_name)}: "
+                        f"{format_mining_number(prev_int)} -> {format_mining_number(bestever_int)}. "
+                        f"Re-basing tracker.",
+                        chain,
+                    )
+                    cycle_best[raw_name] = bestever_int
+                    changed = True
+                    continue
 
-                        cycle_best[raw_name] = bestever_int
-                        changed = True
+                if bestever_int > prev_int:
+                    display = pretty_worker_name(raw_name)
+                    log(
+                        f"Cycle best increased for {display}: "
+                        f"{format_mining_number(prev_int)} -> {format_mining_number(bestever_int)}",
+                        chain,
+                    )
+
+                    try:
+                        discord_post_ath(display, bestever_int, w, pool_data, chain, webhook)
+                        log(f"Discord alert sent for {display}", chain)
+                    except Exception as e:
+                        log(f"Discord alert failed for {display}: {e}", chain)
+
+                    cycle_best[raw_name] = bestever_int
+                    changed = True
 
             if changed:
                 with open(state_file + ".tmp", "w") as f:
