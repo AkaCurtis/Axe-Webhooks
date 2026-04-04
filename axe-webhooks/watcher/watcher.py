@@ -247,7 +247,7 @@ def monitor_chain(chain: str, base_key: str):
         pass
 
     log("Monitor started", chain)
-    
+
     if cycle_best:
         log("Stored cycle best values from state file:", chain)
         for worker, ath in cycle_best.items():
@@ -262,7 +262,7 @@ def monitor_chain(chain: str, base_key: str):
             base_url = cfg[base_key]
             proxy_token = cfg["proxy_token"]
             webhook = cfg["discord_webhook"]
-            
+
             if not base_url or base_url.strip() == "":
                 log("Skipping poll because no URL is configured", chain)
                 time.sleep(POLL_SECONDS)
@@ -270,7 +270,7 @@ def monitor_chain(chain: str, base_key: str):
 
             workers_url = f"{base_url}/api/pool/workers"
             pool_url = f"{base_url}/api/pool"
-            
+
             log(f"Polling {base_url}", chain)
 
             workers_data = get_json(workers_url, proxy_token)
@@ -297,13 +297,18 @@ def monitor_chain(chain: str, base_key: str):
                 except Exception:
                     continue
 
-            changed = False
+            if current_best:
+                log("Current ATH from pool API:", chain)
+                for raw_name, bestever_int in current_best.items():
+                    stored = cycle_best.get(raw_name)
+                    stored_text = format_mining_number(stored) if stored is not None else "none"
+                    log(
+                        f"  {pretty_worker_name(raw_name)}: "
+                        f"{format_mining_number(bestever_int)} (tracking) [stored: {stored_text}]",
+                        chain,
+                    )
 
-            stale_workers = [name for name in list(cycle_best.keys()) if name not in current_best]
-            for stale in stale_workers:
-                log(f"Removing stale worker from state: {pretty_worker_name(stale)}", chain)
-                del cycle_best[stale]
-                changed = True
+            changed = False
 
             for w in details:
                 raw_name = str(w.get("workername", "")).strip()
@@ -328,6 +333,7 @@ def monitor_chain(chain: str, base_key: str):
 
                 prev_int = int(prev)
 
+                # Reset detected: worker found a block or reset stats
                 if bestever_int < prev_int:
                     log(
                         f"Reset detected for {pretty_worker_name(raw_name)}: "
@@ -339,6 +345,7 @@ def monitor_chain(chain: str, base_key: str):
                     changed = True
                     continue
 
+                # New best in current cycle
                 if bestever_int > prev_int:
                     display = pretty_worker_name(raw_name)
                     log(
