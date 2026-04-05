@@ -1,0 +1,39 @@
+name: Publish GHCR Images
+
+on:
+  push:
+    branches: [ "main" ]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  packages: write
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repo
+        uses: actions/checkout@v4
+
+      - name: Log in to GHCR
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Build and push web
+        uses: docker/build-push-action@v6
+        with:
+          context: ./axe-webhooks/web
+          push: true
+          tags: ghcr.io/akacurtis/axe-webhooks-web:latest
+
+      - name: Build and push watcher
+        uses: docker/build-push-action@v6
+        with:
+          context: ./axe-webhooks/watcher
+          push: true
+          tags: ghcr.io/akacurtis/axe-webhooks-watcher:latest
