@@ -45,15 +45,24 @@ def get_host_ip():
     return "192.168.1.1"  # Final fallback
 
 def parse_url(url):
-    """Extract base URL and port from a full URL"""
+    """Extract base URL and path/port from a full URL"""
     if not url:
         return "", ""
     try:
-        # Parse URL like http://192.168.1.1:21212
-        if ":" in url:
+        # Handle paths like http://192.168.1.1/apps/axebch2/
+        if "/apps/" in url:
+            base_end = url.find("/apps/")
+            base = url[:base_end]
+            path = url[base_end:]
+            return base, path
+        # Handle ports like http://192.168.1.1:21212
+        elif ":" in url:
             parts = url.rsplit(":", 1)
-            if len(parts) == 2 and parts[1].isdigit():
-                return parts[0], parts[1]
+            if len(parts) == 2:
+                # Check if it's a port number
+                port_part = parts[1].split("/")[0]  # Handle :21212/api/...
+                if port_part.isdigit():
+                    return parts[0], ":" + port_part
     except Exception:
         pass
     return url, ""
@@ -61,19 +70,14 @@ def parse_url(url):
 def load_config():
     host_ip = get_host_ip()
     
-    # Default ports
-    default_ports = {
+    defaults = {
+        "base_url": f"http://{host_ip}",
         "bch_port": "21212",
         "xec_port": "21218",
         "btc_port": "21215",
         "dbg_port": "21213",
-        "bc2_port": "2345",
-        "bch2_port": "9265",
-    }
-    
-    defaults = {
-        "base_url": f"http://{host_ip}",
-        **default_ports,
+        "bc2_path": "",
+        "bch2_path": "",
         "proxy_token": "",
         "discord_webhook": "",
     }
@@ -90,14 +94,26 @@ def load_config():
             else:
                 # Backward compatibility: parse old full URLs
                 base_url_detected = None
-                for chain in ["bch", "xec", "btc", "dbg", "bc2", "bch2"]:
+                
+                # Original 4 pools use ports
+                for chain in ["bch", "xec", "btc", "dbg"]:
                     old_key = f"{chain}_base"
                     if old_key in data and data[old_key]:
-                        base, port = parse_url(data[old_key])
+                        base, path = parse_url(data[old_key])
                         if base and not base_url_detected:
                             base_url_detected = base
-                        if port:
-                            defaults[f"{chain}_port"] = port
+                        if path and path.startswith(":"):
+                            defaults[f"{chain}_port"] = path[1:]  # Remove colon
+                
+                # BC2 and BCH2 use flexible paths
+                for chain in ["bc2", "bch2"]:
+                    old_key = f"{chain}_base"
+                    if old_key in data and data[old_key]:
+                        base, path = parse_url(data[old_key])
+                        if base and not base_url_detected:
+                            base_url_detected = base
+                        if path:
+                            defaults[f"{chain}_path"] = path
                 
                 if base_url_detected:
                     defaults["base_url"] = base_url_detected
@@ -110,12 +126,28 @@ def load_config():
     except Exception:
         pass
     
-    # Also generate the full URLs for backward compatibility
+    # Generate full URLs for watcher
     base = defaults.get("base_url", f"http://{host_ip}").rstrip("/")
-    for chain in ["bch", "xec", "btc", "dbg", "bc2", "bch2"]:
+    
+    # Original 4 pools: simple port-based
+    for chain in ["bch", "xec", "btc", "dbg"]:
         port = defaults.get(f"{chain}_port", "")
         if port:
             defaults[f"{chain}_base"] = f"{base}:{port}"
+        else:
+            defaults[f"{chain}_base"] = ""
+    
+    # BC2 and BCH2: flexible path/port
+    for chain in ["bc2", "bch2"]:
+        path = defaults.get(f"{chain}_path", "").strip()
+        if path:
+            if path.startswith(":"):
+                defaults[f"{chain}_base"] = f"{base}{path}"
+            elif path.startswith("/"):
+                defaults[f"{chain}_base"] = f"{base}{path}"
+            else:
+                # Assume it's a port number without colon
+                defaults[f"{chain}_base"] = f"{base}:{path}"
         else:
             defaults[f"{chain}_base"] = ""
     
@@ -153,17 +185,32 @@ def save():
         "xec_port": request.form.get("xec_port", "").strip(),
         "btc_port": request.form.get("btc_port", "").strip(),
         "dbg_port": request.form.get("dbg_port", "").strip(),
-        "bc2_port": request.form.get("bc2_port", "").strip(),
-        "bch2_port": request.form.get("bch2_port", "").strip(),
+        "bc2_path": request.form.get("bc2_path", "").strip(),
+        "bch2_path": request.form.get("bch2_path", "").strip(),
         "proxy_token": request.form.get("proxy_token", "").strip(),
         "discord_webhook": request.form.get("discord_webhook", "").strip(),
     }
     
-    # Also save full URLs for backward compatibility with watcher
-    for chain in ["bch", "xec", "btc", "dbg", "bc2", "bch2"]:
+    # Generate full URLs for watcher
+    # Original 4 pools: simple port-based
+    for chain in ["bch", "xec", "btc", "dbg"]:
         port = cfg.get(f"{chain}_port", "")
         if base_url and port:
             cfg[f"{chain}_base"] = f"{base_url}:{port}"
+        else:
+            cfg[f"{chain}_base"] = ""
+    
+    # BC2 and BCH2: flexible path/port
+    for chain in ["bc2", "bch2"]:
+        path = cfg.get(f"{chain}_path", "")
+        if base_url and path:
+            if path.startswith(":"):
+                cfg[f"{chain}_base"] = f"{base_url}{path}"
+            elif path.startswith("/"):
+                cfg[f"{chain}_base"] = f"{base_url}{path}"
+            else:
+                # Assume it's a port number without colon
+                cfg[f"{chain}_base"] = f"{base_url}:{path}"
         else:
             cfg[f"{chain}_base"] = ""
     

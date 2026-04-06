@@ -184,18 +184,27 @@
               <input name="dbg_port" value="{{ cfg.dbg_port }}" class="form-control" placeholder="21213" type="number"/>
             </div>
 
-            <div class="col-md-4 col-sm-6">
+            <div class="col-12 mt-3">
+              <label class="form-label">
+                <i class="bi bi-folder"></i> BC2 & BCH2 (Path or Port)
+              </label>
+              <div class="hint-text" style="margin-top: -0.5rem; margin-bottom: 0.5rem;">
+                <i class="bi bi-info-circle me-1"></i>For 5tatumOS: use path like <code>/apps/axebc2/</code>. For port: <code>:2345</code>
+              </div>
+            </div>
+
+            <div class="col-md-6 col-sm-6">
               <label class="form-label form-label-sm">
                 <span class="crypto-badge badge-bc2">BC2</span>
               </label>
-              <input name="bc2_port" value="{{ cfg.bc2_port }}" class="form-control" placeholder="2345" type="number"/>
+              <input name="bc2_path" value="{{ cfg.bc2_path }}" class="form-control" placeholder="/apps/axebc2/ or :21219"/>
             </div>
 
-            <div class="col-md-4 col-sm-6">
+            <div class="col-md-6 col-sm-6">
               <label class="form-label form-label-sm">
                 <span class="crypto-badge badge-bch2">BCH2</span>
               </label>
-              <input name="bch2_port" value="{{ cfg.bch2_port }}" class="form-control" placeholder="9265" type="number"/>
+              <input name="bch2_path" value="{{ cfg.bch2_path }}" class="form-control" placeholder="/apps/axebch2/ or :9265"/>
             </div>
           </div>
 
