@@ -44,26 +44,81 @@ def get_host_ip():
     
     return "192.168.1.1"  # Final fallback
 
+def parse_url(url):
+    """Extract base URL and port from a full URL"""
+    if not url:
+        return "", ""
+    try:
+        # Parse URL like http://192.168.1.1:21212
+        if ":" in url:
+            parts = url.rsplit(":", 1)
+            if len(parts) == 2 and parts[1].isdigit():
+                return parts[0], parts[1]
+    except Exception:
+        pass
+    return url, ""
+
 def load_config():
     host_ip = get_host_ip()
+    
+    # Default ports
+    default_ports = {
+        "bch_port": "21212",
+        "xec_port": "21218",
+        "btc_port": "21215",
+        "dbg_port": "21213",
+        "bc2_port": "2345",
+        "bch2_port": "9265",
+    }
+    
     defaults = {
-        "bch_base": f"http://{host_ip}:21212",
-        "xec_base": f"http://{host_ip}:21218",
-        "btc_base": f"http://{host_ip}:21215",
-        "dbg_base": f"http://{host_ip}:21213",
+        "base_url": f"http://{host_ip}",
+        **default_ports,
         "proxy_token": "",
         "discord_webhook": "",
     }
+    
     try:
         with open(CONFIG_PATH, "r", encoding="utf-8") as f:
             data = json.load(f)
         if isinstance(data, dict):
-            # Only use defaults for empty/missing values
-            for key in defaults:
-                if key in data and data[key]:
-                    defaults[key] = data[key]
+            # If new format exists, use it
+            if "base_url" in data:
+                for key in defaults:
+                    if key in data and data[key]:
+                        defaults[key] = data[key]
+            else:
+                # Backward compatibility: parse old full URLs
+                base_url_detected = None
+                for chain in ["bch", "xec", "btc", "dbg", "bc2", "bch2"]:
+                    old_key = f"{chain}_base"
+                    if old_key in data and data[old_key]:
+                        base, port = parse_url(data[old_key])
+                        if base and not base_url_detected:
+                            base_url_detected = base
+                        if port:
+                            defaults[f"{chain}_port"] = port
+                
+                if base_url_detected:
+                    defaults["base_url"] = base_url_detected
+                
+                # Preserve other fields
+                if "proxy_token" in data:
+                    defaults["proxy_token"] = data["proxy_token"]
+                if "discord_webhook" in data:
+                    defaults["discord_webhook"] = data["discord_webhook"]
     except Exception:
         pass
+    
+    # Also generate the full URLs for backward compatibility
+    base = defaults.get("base_url", f"http://{host_ip}").rstrip("/")
+    for chain in ["bch", "xec", "btc", "dbg", "bc2", "bch2"]:
+        port = defaults.get(f"{chain}_port", "")
+        if port:
+            defaults[f"{chain}_base"] = f"{base}:{port}"
+        else:
+            defaults[f"{chain}_base"] = ""
+    
     return defaults
 
 def save_config(data):
@@ -90,14 +145,28 @@ def save():
     if not check_password(pw):
         return redirect("/?pw=" + pw)
     
+    base_url = request.form.get("base_url", "").strip().rstrip("/")
+    
     cfg = {
-        "bch_base": request.form.get("bch_base", "").strip(),
-        "xec_base": request.form.get("xec_base", "").strip(),
-        "btc_base": request.form.get("btc_base", "").strip(),
-        "dbg_base": request.form.get("dbg_base", "").strip(),
+        "base_url": base_url,
+        "bch_port": request.form.get("bch_port", "").strip(),
+        "xec_port": request.form.get("xec_port", "").strip(),
+        "btc_port": request.form.get("btc_port", "").strip(),
+        "dbg_port": request.form.get("dbg_port", "").strip(),
+        "bc2_port": request.form.get("bc2_port", "").strip(),
+        "bch2_port": request.form.get("bch2_port", "").strip(),
         "proxy_token": request.form.get("proxy_token", "").strip(),
         "discord_webhook": request.form.get("discord_webhook", "").strip(),
     }
+    
+    # Also save full URLs for backward compatibility with watcher
+    for chain in ["bch", "xec", "btc", "dbg", "bc2", "bch2"]:
+        port = cfg.get(f"{chain}_port", "")
+        if base_url and port:
+            cfg[f"{chain}_base"] = f"{base_url}:{port}"
+        else:
+            cfg[f"{chain}_base"] = ""
+    
     save_config(cfg)
     return redirect("/?pw=" + pw)
 
@@ -118,6 +187,8 @@ def test_webhook():
         ("XEC", cfg.get("xec_base", "").strip()),
         ("BTC", cfg.get("btc_base", "").strip()),
         ("DBG", cfg.get("dbg_base", "").strip()),
+        ("BC2", cfg.get("bc2_base", "").strip()),
+        ("BCH2", cfg.get("bch2_base", "").strip()),
     ]
     
     proxy_token = cfg.get("proxy_token", "").strip()

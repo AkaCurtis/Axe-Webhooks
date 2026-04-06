@@ -28,6 +28,10 @@
       align-items: center;
       gap: 0.5rem;
     }
+    .form-label-sm {
+      font-size: 0.9rem;
+      margin-bottom: 0.3rem;
+    }
     .form-control {
       background: rgba(255,255,255,0.05);
       border: 1px solid rgba(255,255,255,0.1);
@@ -75,6 +79,8 @@
     .badge-xec { background: linear-gradient(135deg, #0074c2 0%, #005a99 100%); }
     .badge-btc { background: linear-gradient(135deg, #f7931a 0%, #d97706 100%); }
     .badge-dbg { background: linear-gradient(135deg, #dc3545 0%, #b02a37 100%); }
+    .badge-bc2 { background: linear-gradient(135deg, #3498db 0%, #2980b9 100%); }
+    .badge-bch2 { background: linear-gradient(135deg, #27ae60 0%, #229954 100%); }
     .donate-section {
       background: rgba(141, 195, 81, 0.1);
       border: 1px solid rgba(141, 195, 81, 0.3);
@@ -126,61 +132,70 @@
       </div>
       
       <div class="card-body p-4">
-        {% if needs_pw %}
-          <div class="alert alert-custom alert-dismissible fade show" role="alert">
-            <i class="bi bi-shield-lock me-2"></i>
-            <strong>Password Required</strong><br/>
-            Add <code>?pw=YOUR_PASSWORD</code> to the URL, or submit the form with the password field filled.
-            <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
-          </div>
-        {% endif %}
-
         <div class="alert alert-info">
           <i class="bi bi-info-circle me-2"></i>
           <strong>Auto-detected Umbrel IP:</strong> <code>{{ detected_ip }}</code>
-          <br><small class="text-white-50">If ports below are empty, they'll default to this IP.</small>
+          <br><small class="text-white-50">Base URL will be combined with ports below.</small>
         </div>
 
         <form method="post" action="/save">
-          {% if needs_pw %}
-            <div class="mb-4">
-              <label class="form-label">
-                <i class="bi bi-key"></i> Password
-              </label>
-              <input name="pw" type="password" class="form-control" placeholder="Admin password"/>
+          <div class="mb-4">
+            <label class="form-label">
+              <i class="bi bi-server"></i> Base URL
+            </label>
+            <input name="base_url" value="{{ cfg.base_url }}" class="form-control" placeholder="http://{{ detected_ip }}" required/>
+            <div class="hint-text">
+              <i class="bi bi-info-circle me-1"></i>Enter the base address without port (e.g., http://{{ detected_ip }})
             </div>
-          {% endif %}
+          </div>
 
-          <div class="row g-4">
-            <div class="col-md-6">
+          <div class="row g-3">
+            <div class="col-12">
               <label class="form-label">
-                <span class="crypto-badge badge-bch">BCH</span> Base URL
+                <i class="bi bi-plug"></i> Pool Ports
               </label>
-              <input name="bch_base" value="{{ cfg.bch_base }}" class="form-control" placeholder="http://{{ detected_ip }}:21212"/>
-              <div class="hint-text">
-                <i class="bi bi-cpu me-1"></i>Detected IP: {{ detected_ip }}
-              </div>
             </div>
-
-            <div class="col-md-6">
-              <label class="form-label">
-                <span class="crypto-badge badge-xec">XEC</span> Base URL
+            
+            <div class="col-md-4 col-sm-6">
+              <label class="form-label form-label-sm">
+                <span class="crypto-badge badge-bch">BCH</span>
               </label>
-              <input name="xec_base" value="{{ cfg.xec_base }}" class="form-control" placeholder="http://{{ detected_ip }}:21218"/>
+              <input name="bch_port" value="{{ cfg.bch_port }}" class="form-control" placeholder="21212" type="number"/>
             </div>
 
-            <div class="col-md-6">
-              <label class="form-label">
-                <span class="crypto-badge badge-btc">BTC</span> Base URL
+            <div class="col-md-4 col-sm-6">
+              <label class="form-label form-label-sm">
+                <span class="crypto-badge badge-xec">XEC</span>
               </label>
-              <input name="btc_base" value="{{ cfg.btc_base }}" class="form-control" placeholder="http://{{ detected_ip }}:21215"/>
+              <input name="xec_port" value="{{ cfg.xec_port }}" class="form-control" placeholder="21218" type="number"/>
             </div>
 
-            <div class="col-md-6">
-              <label class="form-label">
-                <span class="crypto-badge badge-dbg">DBG</span> Base URL
+            <div class="col-md-4 col-sm-6">
+              <label class="form-label form-label-sm">
+                <span class="crypto-badge badge-btc">BTC</span>
               </label>
-              <input name="dbg_base" value="{{ cfg.dbg_base }}" class="form-control" placeholder="http://{{ detected_ip }}:21213"/>
+              <input name="btc_port" value="{{ cfg.btc_port }}" class="form-control" placeholder="21215" type="number"/>
+            </div>
+
+            <div class="col-md-4 col-sm-6">
+              <label class="form-label form-label-sm">
+                <span class="crypto-badge badge-dbg">DBG</span>
+              </label>
+              <input name="dbg_port" value="{{ cfg.dbg_port }}" class="form-control" placeholder="21213" type="number"/>
+            </div>
+
+            <div class="col-md-4 col-sm-6">
+              <label class="form-label form-label-sm">
+                <span class="crypto-badge badge-bc2">BC2</span>
+              </label>
+              <input name="bc2_port" value="{{ cfg.bc2_port }}" class="form-control" placeholder="2345" type="number"/>
+            </div>
+
+            <div class="col-md-4 col-sm-6">
+              <label class="form-label form-label-sm">
+                <span class="crypto-badge badge-bch2">BCH2</span>
+              </label>
+              <input name="bch2_port" value="{{ cfg.bch2_port }}" class="form-control" placeholder="9265" type="number"/>
             </div>
           </div>
 

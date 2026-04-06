@@ -38,6 +38,8 @@ def load_config() -> Dict[str, str]:
         "xec_base": "",
         "btc_base": "",
         "dbg_base": "",
+        "bc2_base": "",
+        "bch2_base": "",
         "proxy_token": "",
         "discord_webhook": "",
     }
@@ -170,6 +172,8 @@ def discord_post_ath(display: str, bestever: int, worker_data: Dict[str, Any],
         "XEC": 0x0074C2,
         "BTC": 0xF7931A,
         "DBG": 0x8B4513,
+        "BC2": 0x3498DB,
+        "BCH2": 0x27AE60,
     }
 
     thumbnails = {
@@ -177,6 +181,8 @@ def discord_post_ath(display: str, bestever: int, worker_data: Dict[str, Any],
         "XEC": "https://cryptologos.cc/logos/ecash-xec-logo.png",
         "BTC": "https://cryptologos.cc/logos/bitcoin-btc-logo.png",
         "DBG": "https://via.placeholder.com/150/8B4513/FFFFFF?text=DBG",
+        "BC2": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQH9BaF35g1hAM-MMgOHHxMsQSB42NiO1u2kw&s",
+        "BCH2": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQBUWPSkj8UNh8pK0U_6qB4Zehk1bco21H2XQ&s",
     }
 
     embed_color = colors.get(chain, 706958)
@@ -389,6 +395,8 @@ def main():
         threading.Thread(target=monitor_chain, args=("XEC", "xec_base"), daemon=True),
         threading.Thread(target=monitor_chain, args=("BTC", "btc_base"), daemon=True),
         threading.Thread(target=monitor_chain, args=("DBG", "dbg_base"), daemon=True),
+        threading.Thread(target=monitor_chain, args=("BC2", "bc2_base"), daemon=True),
+        threading.Thread(target=monitor_chain, args=("BCH2", "bch2_base"), daemon=True),
     ]
 
     for t in threads:
