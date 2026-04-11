@@ -9,7 +9,7 @@ services:
       - web
 
   web:
-    image: ghcr.io/akacurtis/axe-webhooks-web:0.7.1
+    image: ghcr.io/akacurtis/axe-webhooks-web:latest
     init: true
     restart: on-failure
     stop_grace_period: 1m
@@ -19,7 +19,7 @@ services:
       ADMIN_PASSWORD: "${APP_AXE_WEBHOOKS_ADMIN_PASSWORD:-}"
 
   watcher:
-    image: ghcr.io/akacurtis/axe-webhooks-watcher:0.7.1
+    image: ghcr.io/akacurtis/axe-webhooks-watcher:latest
     init: true
     restart: on-failure
     stop_grace_period: 1m
