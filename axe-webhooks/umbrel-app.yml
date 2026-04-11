@@ -5,7 +5,7 @@ name: ATH Monitor
 tagline: Worker ATH Discord alerts
 icon: https://raw.githubusercontent.com/AkaCurtis/Axe-Webhooks/main/axe-webhooks/icon.svg
 category: Development
-version: "0.6.9"
+version: "0.7.0"
 port: 3456
 
 description: >-
@@ -16,7 +16,7 @@ developer: Curtis
 repo: https://github.com/AkaCurtis/Axe-Webhooks
 support: https://github.com/AkaCurtis/Axe-Webhooks/issues
 gallery: []
-releaseNotes: Added support for BC2 and BCH2, updated web UI slightly
+releaseNotes: Possible Fix for DGB
 dependencies: []
 path: ""
 defaultUsername: ""
