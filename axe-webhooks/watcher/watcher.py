@@ -38,6 +38,7 @@ def load_config() -> Dict[str, str]:
         "xec_base": "",
         "btc_base": "",
         "dbg_base": "",
+        "dbg_algos": "sha256,scrypt",
         "bc2_base": "",
         "bch2_base": "",
         "proxy_token": "",
@@ -55,7 +56,7 @@ def load_config() -> Dict[str, str]:
         pass
 
     # Normalize URLs
-    for k in ("bch_base", "xec_base", "btc_base", "dbg_base"):
+    for k in ("bch_base", "xec_base", "btc_base", "dbg_base", "bc2_base", "bch2_base"):
         defaults[k] = defaults[k].rstrip("/")
 
     return defaults
@@ -231,6 +232,159 @@ def discord_post_ath(display: str, bestever: int, worker_data: Dict[str, Any],
 # Monitor Logic
 # -----------------------------
 
+def monitor_chain_algo(chain: str, base_key: str, algo: str):
+    """Monitor a specific algorithm on a multi-algo chain."""
+    display_chain = f"{chain}-{algo.upper()}"
+    state_file = f"/data/{chain.lower()}_{algo.lower()}_state.json"
+
+    cycle_best: Dict[str, int] = {}
+
+    try:
+        with open(state_file, "r") as f:
+            d = json.load(f)
+            if isinstance(d, dict):
+                stored_cycle_best = d.get("cycle_best")
+                legacy_cycle_best = d.get("last_bestever")
+                raw_cycle_best = stored_cycle_best if isinstance(stored_cycle_best, dict) else legacy_cycle_best
+                if isinstance(raw_cycle_best, dict):
+                    cycle_best = {
+                        str(worker): int(value)
+                        for worker, value in raw_cycle_best.items()
+                    }
+    except Exception:
+        pass
+
+    log("Monitor started", display_chain)
+
+    if cycle_best:
+        log("Stored cycle best values from state file:", display_chain)
+        for worker, ath in cycle_best.items():
+            log(f"{pretty_worker_name(worker)}: {format_mining_number(ath)}", display_chain)
+    else:
+        log("No stored cycle values yet", display_chain)
+
+    while True:
+        try:
+            cfg = load_config()
+
+            base_url = cfg[base_key]
+            proxy_token = cfg["proxy_token"]
+            webhook = cfg["discord_webhook"]
+
+            if not base_url or base_url.strip() == "":
+                log("Skipping poll because no URL is configured", display_chain)
+                time.sleep(POLL_SECONDS)
+                continue
+
+            # Multi-algo uses /api/pool/miners?algo=<algo>
+            workers_url = f"{base_url}/api/pool/miners?algo={algo}"
+            pool_url = f"{base_url}/api/pool"
+
+            log(f"Polling {base_url} (algo={algo})", display_chain)
+
+            workers_data = get_json(workers_url, proxy_token)
+            pool_data = get_json(pool_url, proxy_token)
+
+            # Multi-algo API uses 'miners' key
+            details = workers_data.get("miners", [])
+            if not isinstance(details, list):
+                details = []
+
+            log(f"Fetched {len(details)} miners: {summarize_workers(details)}", display_chain)
+
+            current_best: Dict[str, int] = {}
+            for w in details:
+                raw_name = str(w.get("workername", "")).strip()
+                if not raw_name:
+                    continue
+
+                bestever = w.get("bestshare_since_block")
+                if bestever is None:
+                    continue
+
+                try:
+                    current_best[raw_name] = int(bestever)
+                except Exception:
+                    continue
+
+            if current_best:
+                log("Current ATH from pool API:", display_chain)
+                for raw_name, bestever_int in current_best.items():
+                    stored = cycle_best.get(raw_name)
+                    stored_text = format_mining_number(stored) if stored is not None else "none"
+                    log(
+                        f"  {pretty_worker_name(raw_name)}: "
+                        f"{format_mining_number(bestever_int)} (tracking) [stored: {stored_text}]",
+                        display_chain,
+                    )
+
+            changed = False
+
+            for w in details:
+                raw_name = str(w.get("workername", "")).strip()
+                if not raw_name:
+                    continue
+
+                bestever_int = current_best.get(raw_name)
+                if bestever_int is None:
+                    continue
+
+                prev = cycle_best.get(raw_name)
+
+                if prev is None:
+                    log(
+                        f"Tracking new worker {pretty_worker_name(raw_name)} at "
+                        f"{format_mining_number(bestever_int)}",
+                        display_chain,
+                    )
+                    cycle_best[raw_name] = bestever_int
+                    changed = True
+                    continue
+
+                prev_int = int(prev)
+
+                # Reset detected: worker found a block or reset stats
+                if bestever_int < prev_int:
+                    log(
+                        f"Reset detected for {pretty_worker_name(raw_name)}: "
+                        f"{format_mining_number(prev_int)} -> {format_mining_number(bestever_int)}. "
+                        f"Re-basing tracker.",
+                        display_chain,
+                    )
+                    cycle_best[raw_name] = bestever_int
+                    changed = True
+                    continue
+
+                # New best in current cycle
+                if bestever_int > prev_int:
+                    display = pretty_worker_name(raw_name)
+                    log(
+                        f"Cycle best increased for {display}: "
+                        f"{format_mining_number(prev_int)} -> {format_mining_number(bestever_int)}",
+                        display_chain,
+                    )
+
+                    try:
+                        discord_post_ath(display, bestever_int, w, pool_data, display_chain, webhook)
+                        log(f"Discord alert sent for {display}", display_chain)
+                    except Exception as e:
+                        log(f"Discord alert failed for {display}: {e}", display_chain)
+
+                    cycle_best[raw_name] = bestever_int
+                    changed = True
+
+            if changed:
+                with open(state_file + ".tmp", "w") as f:
+                    json.dump({"cycle_best": cycle_best}, f)
+                os.replace(state_file + ".tmp", state_file)
+                log(f"Saved state for {len(cycle_best)} miners", display_chain)
+
+        except Exception as e:
+            log(f"Poll failed: {e}", display_chain)
+
+        time.sleep(POLL_SECONDS)
+
+
 def monitor_chain(chain: str, base_key: str):
 
     state_file = f"/data/{chain.lower()}_state.json"
@@ -394,10 +548,19 @@ def main():
         threading.Thread(target=monitor_chain, args=("BCH", "bch_base"), daemon=True),
         threading.Thread(target=monitor_chain, args=("XEC", "xec_base"), daemon=True),
         threading.Thread(target=monitor_chain, args=("BTC", "btc_base"), daemon=True),
-        threading.Thread(target=monitor_chain, args=("DBG", "dbg_base"), daemon=True),
         threading.Thread(target=monitor_chain, args=("BC2", "bc2_base"), daemon=True),
         threading.Thread(target=monitor_chain, args=("BCH2", "bch2_base"), daemon=True),
     ]
+
+    # DGB multi-algo monitoring
+    cfg = load_config()
+    dbg_algos = cfg.get("dbg_algos", "sha256,scrypt")
+    for algo in dbg_algos.split(","):
+        algo = algo.strip()
+        if algo:
+            threads.append(
+                threading.Thread(target=monitor_chain_algo, args=("DBG", "dbg_base", algo), daemon=True)
+            )
 
     for t in threads:
         t.start()
