@@ -183,7 +183,7 @@ def discord_post_ath(display: str, bestever: int, worker_data: Dict[str, Any],
         "BTC": "https://cryptologos.cc/logos/bitcoin-btc-logo.png",
         "DBG": "https://via.placeholder.com/150/8B4513/FFFFFF?text=DBG",
         "BC2": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQH9BaF35g1hAM-MMgOHHxMsQSB42NiO1u2kw&s",
-        "BCH2": "https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQBUWPSkj8UNh8pK0U_6qB4Zehk1bco21H2XQ&s",
+        "BCH2": "https://github.com/AkaCurtis/Axe-Webhooks/blob/main/images-removebg-preview.png?raw=true",
     }
 
     embed_color = colors.get(chain, 706958)
