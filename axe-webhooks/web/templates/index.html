@@ -81,6 +81,9 @@
     .badge-dbg { background: linear-gradient(135deg, #dc3545 0%, #b02a37 100%); }
     .badge-bc2 { background: linear-gradient(135deg, #3498db 0%, #2980b9 100%); }
     .badge-bch2 { background: linear-gradient(135deg, #27ae60 0%, #229954 100%); }
+    .badge-eth { background: linear-gradient(135deg, #627eea 0%, #4e5fa6 100%); }
+    .badge-ltc { background: linear-gradient(135deg, #838383 0%, #5a5a5a 100%); }
+    .badge-doge { background: linear-gradient(135deg, #c3a634 0%, #9a8328 100%); }
     .donate-section {
       background: rgba(141, 195, 81, 0.1);
       border: 1px solid rgba(141, 195, 81, 0.3);
@@ -104,7 +107,7 @@
       box-shadow: 0 8px 20px rgba(141, 195, 81, 0.4);
       color: white;
     }
-    .bch-address {
+    .crypto-address {
       background: rgba(255,255,255,0.05);
       border: 1px solid rgba(255,255,255,0.1);
       padding: 0.5rem 1rem;
@@ -114,9 +117,13 @@
       word-break: break-all;
       cursor: pointer;
       transition: background 0.2s;
+      margin-bottom: 0.75rem;
     }
-    .bch-address:hover {
+    .crypto-address:hover {
       background: rgba(255,255,255,0.08);
+    }
+    .crypto-address:last-child {
+      margin-bottom: 0;
     }
   </style>
 </head>
@@ -204,7 +211,7 @@
               <label class="form-label form-label-sm">
                 <span class="crypto-badge badge-bch2">BCH2</span>
               </label>
-              <input name="bch2_path" value="{{ cfg.bch2_path }}" class="form-control" placeholder="/apps/axebch2/ or :9265"/>
+              <input name="bch2_path" value="{{ cfg.bch2_path }}" class="form-control" placeholder="/apps/axebch2/ or :21223"/>
             </div>
           </div>
 
@@ -245,21 +252,52 @@
         </form>
 
         <div class="donate-section">
-          <div class="d-flex align-items-center justify-content-between flex-wrap gap-3">
-            <div>
-              <h6 class="mb-1">
-                <i class="bi bi-heart-fill text-danger me-2"></i>
-                Support Development
-              </h6>
-              <small class="text-muted">If this tool helps you, consider a BCH donation!</small>
-            </div>
-            <a href="bitcoincash:bitcoincash:qpx8jdmgef3z3zj3a4r2p2fykql2stkzpcgnlvy6k6" class="donate-btn">
-              <i class="bi bi-wallet2 me-2"></i>Donate BCH
-            </a>
+          <div class="text-center mb-3">
+            <h6 class="mb-1">
+              <i class="bi bi-heart-fill text-danger me-2"></i>
+              Support Development
+            </h6>
+            <small class="text-muted">If this tool helps you, consider a donation! Click any address to copy.</small>
           </div>
-          <div class="bch-address mt-3" id="bchAddress" title="Click to copy">
-            <small class="text-muted d-block mb-1">BCH Address:</small>
-            bitcoincash:qpx8jdmgef3z3zj3a4r2p2fykql2stkzpcgnlvy6k6
+          
+          <div class="crypto-address" data-address="0x6731a52c5cb21d842261c721824923c9712ee95d" title="Click to copy">
+            <div class="d-flex align-items-center justify-content-between mb-1">
+              <span class="crypto-badge badge-eth">ETH</span>
+              <small class="text-success copy-feedback" style="display:none;"><i class="bi bi-check-circle"></i> Copied!</small>
+            </div>
+            <div class="text-break">0x6731a52c5cb21d842261c721824923c9712ee95d</div>
+          </div>
+
+          <div class="crypto-address" data-address="bc1q37dlrvl0ls0em9ue6ypzlshpnqtyw0avkvwt35" title="Click to copy">
+            <div class="d-flex align-items-center justify-content-between mb-1">
+              <span class="crypto-badge badge-btc">BTC</span>
+              <small class="text-success copy-feedback" style="display:none;"><i class="bi bi-check-circle"></i> Copied!</small>
+            </div>
+            <div class="text-break">bc1q37dlrvl0ls0em9ue6ypzlshpnqtyw0avkvwt35</div>
+          </div>
+
+          <div class="crypto-address" data-address="ltc1qsyny65w69c9n7fqv4g3vnktr4n0mcz28ne9qwe" title="Click to copy">
+            <div class="d-flex align-items-center justify-content-between mb-1">
+              <span class="crypto-badge badge-ltc">LTC</span>
+              <small class="text-success copy-feedback" style="display:none;"><i class="bi bi-check-circle"></i> Copied!</small>
+            </div>
+            <div class="text-break">ltc1qsyny65w69c9n7fqv4g3vnktr4n0mcz28ne9qwe</div>
+          </div>
+
+          <div class="crypto-address" data-address="DEMedHZesQYamDQ3tyQeWuuJSN4ieqyjuH" title="Click to copy">
+            <div class="d-flex align-items-center justify-content-between mb-1">
+              <span class="crypto-badge badge-doge">DOGE</span>
+              <small class="text-success copy-feedback" style="display:none;"><i class="bi bi-check-circle"></i> Copied!</small>
+            </div>
+            <div class="text-break">DEMedHZesQYamDQ3tyQeWuuJSN4ieqyjuH</div>
+          </div>
+
+          <div class="crypto-address" data-address="bitcoincash:qpx8jdmgef3z3zj3a4r2p2fykql2stkzpcgnlvy6k6" title="Click to copy">
+            <div class="d-flex align-items-center justify-content-between mb-1">
+              <span class="crypto-badge badge-bch">BCH</span>
+              <small class="text-success copy-feedback" style="display:none;"><i class="bi bi-check-circle"></i> Copied!</small>
+            </div>
+            <div class="text-break">bitcoincash:qpx8jdmgef3z3zj3a4r2p2fykql2stkzpcgnlvy6k6</div>
           </div>
         </div>
       </div>
@@ -275,15 +313,20 @@
 
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
   <script>
-    // Copy BCH address to clipboard
-    document.getElementById('bchAddress').addEventListener('click', function() {
-      const address = 'bitcoincash:qpx8jdmgef3z3zj3a4r2p2fykql2stkzpcgnlvy6k6';
-      navigator.clipboard.writeText(address).then(() => {
-        const originalText = this.innerHTML;
-        this.innerHTML = '<small class="text-success"><i class="bi bi-check-circle me-1"></i>Address copied to clipboard!</small>';
-        setTimeout(() => {
-          this.innerHTML = originalText;
-        }, 2000);
+    // Copy crypto addresses to clipboard
+    document.querySelectorAll('.crypto-address').forEach(element => {
+      element.addEventListener('click', function() {
+        const address = this.getAttribute('data-address');
+        const feedback = this.querySelector('.copy-feedback');
+        
+        navigator.clipboard.writeText(address).then(() => {
+          feedback.style.display = 'inline';
+          setTimeout(() => {
+            feedback.style.display = 'none';
+          }, 2000);
+        }).catch(err => {
+          console.error('Failed to copy:', err);
+        });
       });
     });
 
