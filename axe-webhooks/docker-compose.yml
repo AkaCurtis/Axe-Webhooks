@@ -11,17 +11,23 @@ services:
   web:
     image: ghcr.io/akacurtis/axe-webhooks-web:latest
     init: true
-    restart: on-failure
+    restart: always
     stop_grace_period: 1m
     volumes:
       - ${APP_DATA_DIR}:/data
     environment:
       ADMIN_PASSWORD: "${APP_AXE_WEBHOOKS_ADMIN_PASSWORD:-}"
+    healthcheck:
+      test: ["CMD", "python", "-c", "import socket; s = socket.socket(socket.AF_INET, socket.SOCK_STREAM); s.connect(('127.0.0.1', 3456)); s.close()"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
 
   watcher:
     image: ghcr.io/akacurtis/axe-webhooks-watcher:latest
     init: true
-    restart: on-failure
+    restart: always
     stop_grace_period: 1m
     volumes:
       - ${APP_DATA_DIR}:/data

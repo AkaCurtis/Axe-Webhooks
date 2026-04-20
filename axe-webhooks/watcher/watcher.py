@@ -237,6 +237,8 @@ def discord_post_ath(display: str, bestever: int, worker_data: Dict[str, Any],
         embed_data["image"] = {"url": embed_image}
 
     payload = {
+        "username": f"Axe{chain} Monitor",
+        "avatar_url": thumbnail,
         "embeds": [embed_data]
     }
 

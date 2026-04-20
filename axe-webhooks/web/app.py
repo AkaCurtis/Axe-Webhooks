@@ -154,9 +154,16 @@ def load_config():
     return defaults
 
 def save_config(data):
-    os.makedirs(os.path.dirname(CONFIG_PATH), exist_ok=True)
-    with open(CONFIG_PATH, "w", encoding="utf-8") as f:
-        json.dump(data, f, indent=2)
+    try:
+        os.makedirs(os.path.dirname(CONFIG_PATH), exist_ok=True)
+    except Exception as e:
+        print(f"Warning: Could not create config directory: {e}", flush=True)
+    try:
+        with open(CONFIG_PATH, "w", encoding="utf-8") as f:
+            json.dump(data, f, indent=2)
+    except Exception as e:
+        print(f"Error saving config: {e}", flush=True)
+        raise
 
 def check_password(pw):
     if not ADMIN_PASSWORD:
@@ -334,4 +341,16 @@ def test_webhook():
         return jsonify({"success": False, "error": f"Failed to send webhook: {str(e)}"}), 500
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=3456, debug=False)
+    print("=" * 50, flush=True)
+    print("ATH Monitor Web UI Starting...", flush=True)
+    print(f"Config path: {CONFIG_PATH}", flush=True)
+    print(f"Admin password: {'SET' if ADMIN_PASSWORD else 'NOT SET'}", flush=True)
+    print(f"Detected host IP: {get_host_ip()}", flush=True)
+    print("=" * 50, flush=True)
+    try:
+        app.run(host="0.0.0.0", port=3456, debug=False)
+    except Exception as e:
+        print(f"FATAL ERROR: Failed to start Flask app: {e}", flush=True)
+        import traceback
+        traceback.print_exc()
+        raise

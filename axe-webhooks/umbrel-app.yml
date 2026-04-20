@@ -5,7 +5,7 @@ name: ATH Monitor
 tagline: Worker ATH Discord alerts
 icon: https://raw.githubusercontent.com/AkaCurtis/Axe-Webhooks/main/axe-webhooks/icon.svg
 category: Development
-version: "0.7.6"
+version: "0.8.0"
 port: 3456
 
 description: >-
@@ -16,7 +16,9 @@ developer: Curtis
 repo: https://github.com/AkaCurtis/Axe-Webhooks
 support: https://github.com/AkaCurtis/Axe-Webhooks/issues
 gallery: []
-releaseNotes: Added special celebration message when a worker hits 100% and finds a block!
+releaseNotes: >-
+  Added special celebration with Kirby gif when a worker finds a block!
+  Fixed ECONNREFUSED errors by improving service reliability and adding healthchecks.
 dependencies: []
 path: ""
 defaultUsername: ""
