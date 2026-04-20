@@ -314,18 +314,51 @@
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
   <script>
     // Copy crypto addresses to clipboard
-    document.querySelectorAll('.crypto-address').forEach(element => {
-      element.addEventListener('click', function() {
-        const address = this.getAttribute('data-address');
-        const feedback = this.querySelector('.copy-feedback');
-        
-        navigator.clipboard.writeText(address).then(() => {
-          feedback.style.display = 'inline';
-          setTimeout(() => {
-            feedback.style.display = 'none';
-          }, 2000);
+    function copyToClipboard(text, feedbackElement) {
+      // Try modern clipboard API first
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(() => {
+          showCopyFeedback(feedbackElement);
         }).catch(err => {
-          console.error('Failed to copy:', err);
+          // Fallback to old method
+          fallbackCopyToClipboard(text, feedbackElement);
+        });
+      } else {
+        // Use fallback for older browsers
+        fallbackCopyToClipboard(text, feedbackElement);
+      }
+    }
+
+    function fallbackCopyToClipboard(text, feedbackElement) {
+      const textArea = document.createElement('textarea');
+      textArea.value = text;
+      textArea.style.position = 'fixed';
+      textArea.style.left = '-999999px';
+      document.body.appendChild(textArea);
+      textArea.select();
+      try {
+        document.execCommand('copy');
+        showCopyFeedback(feedbackElement);
+      } catch (err) {
+        console.error('Failed to copy:', err);
+      }
+      document.body.removeChild(textArea);
+    }
+
+    function showCopyFeedback(feedbackElement) {
+      feedbackElement.style.display = 'inline';
+      setTimeout(() => {
+        feedbackElement.style.display = 'none';
+      }, 2000);
+    }
+
+    // Wait for DOM to be ready
+    document.addEventListener('DOMContentLoaded', function() {
+      document.querySelectorAll('.crypto-address').forEach(element => {
+        element.addEventListener('click', function() {
+          const address = this.getAttribute('data-address');
+          const feedback = this.querySelector('.copy-feedback');
+          copyToClipboard(address, feedback);
         });
       });
     });
