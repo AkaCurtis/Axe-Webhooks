@@ -212,16 +212,32 @@ def discord_post_ath(display: str, bestever: int, worker_data: Dict[str, Any],
         {"name": "📈 Progress to Block", "value": bar_text, "inline": False},
     ]
 
+    # Check if worker hit 100% (found a block!)
+    if ratio >= 1.0:
+        embed_title = f"🎉 {display} just hit a block! ({chain})"
+        embed_description = f"**{display}** found a block with this share! Congratulations! 🎊"
+        embed_image = "https://media.tenor.com/_R_724_kn-AAAAAM/kirby-jams.gif"
+    else:
+        embed_title = f"🔥 NEW WORKER ATH! ({chain})"
+        embed_description = f"**{display}** just hit a new best share!"
+        embed_image = None
+
+    embed_data = {
+        "title": embed_title,
+        "description": embed_description,
+        "color": embed_color,
+        "thumbnail": {"url": thumbnail},
+        "fields": fields,
+        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "footer": {"text": f"Axe{chain} Solo Node"},
+    }
+
+    # Add Kirby gif if they hit a block
+    if embed_image:
+        embed_data["image"] = {"url": embed_image}
+
     payload = {
-        "embeds": [{
-            "title": f"🔥 NEW WORKER ATH! ({chain})",
-            "description": f"**{display}** just hit a new best share!",
-            "color": embed_color,
-            "thumbnail": {"url": thumbnail},
-            "fields": fields,
-            "timestamp": datetime.now(timezone.utc).isoformat(),
-            "footer": {"text": f"Axe{chain} Solo Node"},
-        }]
+        "embeds": [embed_data]
     }
 
     r = requests.post(webhook, json=payload, timeout=15)
