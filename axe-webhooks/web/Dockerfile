@@ -2,7 +2,7 @@ FROM python:3.12-alpine AS builder
 
 WORKDIR /build
 
-RUN pip install --no-cache-dir flask requests
+RUN pip install --no-cache-dir flask requests waitress
 
 FROM python:3.12-alpine
 
@@ -16,4 +16,4 @@ COPY --chown=1000:1000 templates templates/
 
 EXPOSE 3456
 
-CMD ["python", "-u", "app.py"]
+CMD ["waitress-serve", "--host=0.0.0.0", "--port=3456", "app:app"]

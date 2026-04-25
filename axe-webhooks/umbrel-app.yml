@@ -5,12 +5,11 @@ name: ATH Monitor
 tagline: Worker ATH Discord alerts
 icon: https://raw.githubusercontent.com/AkaCurtis/Axe-Webhooks/main/axe-webhooks/icon.svg
 category: Development
-version: "0.8.1"
+version: "0.8.2"
 port: 3456
 
 description: >-
-  Configure node endpoints and Discord webhook via web UI,
-  then monitor workers for new best shares.
+  fixed waitress missing
 
 developer: Curtis
 repo: https://github.com/AkaCurtis/Axe-Webhooks
