@@ -16,4 +16,4 @@ COPY --chown=1000:1000 templates templates/
 
 EXPOSE 3456
 
-CMD ["waitress-serve", "--host=0.0.0.0", "--port=3456", "app:app"]
+CMD ["python", "-m", "waitress", "--host=0.0.0.0", "--port=3456", "app:app"]
