@@ -44,126 +44,32 @@ def get_host_ip():
     
     return "192.168.1.1"  # Final fallback
 
-def parse_url(url):
-    """Extract base URL and path/port from a full URL"""
-    if not url:
-        return "", ""
-    try:
-        # Handle paths like http://192.168.1.1/apps/axebch2/
-        if "/apps/" in url:
-            base_end = url.find("/apps/")
-            base = url[:base_end]
-            path = url[base_end:]
-            return base, path
-        # Handle ports like http://192.168.1.1:21212
-        elif ":" in url:
-            parts = url.rsplit(":", 1)
-            if len(parts) == 2:
-                # Check if it's a port number
-                port_part = parts[1].split("/")[0]  # Handle :21212/api/...
-                if port_part.isdigit():
-                    return parts[0], ":" + port_part
-    except Exception:
-        pass
-    return url, ""
-
 def load_config():
     host_ip = get_host_ip()
-    
     defaults = {
-        "base_url": f"http://{host_ip}",
-        "bch_port": "21212",
-        "xec_port": "21218",
-        "btc_port": "21215",
-        "dbg_port": "21213",
-        "bc2_path": "",
-        "bch2_path": "",
+        "bch_base": f"http://{host_ip}:21212",
+        "xec_base": f"http://{host_ip}:21218",
+        "btc_base": f"http://{host_ip}:21215",
+        "dbg_base": f"http://{host_ip}:21213",
         "proxy_token": "",
         "discord_webhook": "",
     }
-    
     try:
         with open(CONFIG_PATH, "r", encoding="utf-8") as f:
             data = json.load(f)
         if isinstance(data, dict):
-            # If new format exists, use it
-            if "base_url" in data:
-                for key in defaults:
-                    if key in data and data[key]:
-                        defaults[key] = data[key]
-            else:
-                # Backward compatibility: parse old full URLs
-                base_url_detected = None
-                
-                # Original 4 pools use ports
-                for chain in ["bch", "xec", "btc", "dbg"]:
-                    old_key = f"{chain}_base"
-                    if old_key in data and data[old_key]:
-                        base, path = parse_url(data[old_key])
-                        if base and not base_url_detected:
-                            base_url_detected = base
-                        if path and path.startswith(":"):
-                            defaults[f"{chain}_port"] = path[1:]  # Remove colon
-                
-                # BC2 and BCH2 use flexible paths
-                for chain in ["bc2", "bch2"]:
-                    old_key = f"{chain}_base"
-                    if old_key in data and data[old_key]:
-                        base, path = parse_url(data[old_key])
-                        if base and not base_url_detected:
-                            base_url_detected = base
-                        if path:
-                            defaults[f"{chain}_path"] = path
-                
-                if base_url_detected:
-                    defaults["base_url"] = base_url_detected
-                
-                # Preserve other fields
-                if "proxy_token" in data:
-                    defaults["proxy_token"] = data["proxy_token"]
-                if "discord_webhook" in data:
-                    defaults["discord_webhook"] = data["discord_webhook"]
+            # Only use defaults for empty/missing values
+            for key in defaults:
+                if key in data and data[key]:
+                    defaults[key] = data[key]
     except Exception:
         pass
-    
-    # Generate full URLs for watcher
-    base = defaults.get("base_url", f"http://{host_ip}").rstrip("/")
-    
-    # Original 4 pools: simple port-based
-    for chain in ["bch", "xec", "btc", "dbg"]:
-        port = defaults.get(f"{chain}_port", "")
-        if port:
-            defaults[f"{chain}_base"] = f"{base}:{port}"
-        else:
-            defaults[f"{chain}_base"] = ""
-    
-    # BC2 and BCH2: flexible path/port
-    for chain in ["bc2", "bch2"]:
-        path = defaults.get(f"{chain}_path", "").strip()
-        if path:
-            if path.startswith(":"):
-                defaults[f"{chain}_base"] = f"{base}{path}"
-            elif path.startswith("/"):
-                defaults[f"{chain}_base"] = f"{base}{path}"
-            else:
-                # Assume it's a port number without colon
-                defaults[f"{chain}_base"] = f"{base}:{path}"
-        else:
-            defaults[f"{chain}_base"] = ""
-    
     return defaults
 
 def save_config(data):
-    try:
-        os.makedirs(os.path.dirname(CONFIG_PATH), exist_ok=True)
-    except Exception as e:
-        print(f"Warning: Could not create config directory: {e}", flush=True)
-    try:
-        with open(CONFIG_PATH, "w", encoding="utf-8") as f:
-            json.dump(data, f, indent=2)
-    except Exception as e:
-        print(f"Error saving config: {e}", flush=True)
-        raise
+    os.makedirs(os.path.dirname(CONFIG_PATH), exist_ok=True)
+    with open(CONFIG_PATH, "w", encoding="utf-8") as f:
+        json.dump(data, f, indent=2)
 
 def check_password(pw):
     if not ADMIN_PASSWORD:
@@ -184,43 +90,14 @@ def save():
     if not check_password(pw):
         return redirect("/?pw=" + pw)
     
-    base_url = request.form.get("base_url", "").strip().rstrip("/")
-    
     cfg = {
-        "base_url": base_url,
-        "bch_port": request.form.get("bch_port", "").strip(),
-        "xec_port": request.form.get("xec_port", "").strip(),
-        "btc_port": request.form.get("btc_port", "").strip(),
-        "dbg_port": request.form.get("dbg_port", "").strip(),
-        "bc2_path": request.form.get("bc2_path", "").strip(),
-        "bch2_path": request.form.get("bch2_path", "").strip(),
+        "bch_base": request.form.get("bch_base", "").strip(),
+        "xec_base": request.form.get("xec_base", "").strip(),
+        "btc_base": request.form.get("btc_base", "").strip(),
+        "dbg_base": request.form.get("dbg_base", "").strip(),
         "proxy_token": request.form.get("proxy_token", "").strip(),
         "discord_webhook": request.form.get("discord_webhook", "").strip(),
     }
-    
-    # Generate full URLs for watcher
-    # Original 4 pools: simple port-based
-    for chain in ["bch", "xec", "btc", "dbg"]:
-        port = cfg.get(f"{chain}_port", "")
-        if base_url and port:
-            cfg[f"{chain}_base"] = f"{base_url}:{port}"
-        else:
-            cfg[f"{chain}_base"] = ""
-    
-    # BC2 and BCH2: flexible path/port
-    for chain in ["bc2", "bch2"]:
-        path = cfg.get(f"{chain}_path", "")
-        if base_url and path:
-            if path.startswith(":"):
-                cfg[f"{chain}_base"] = f"{base_url}{path}"
-            elif path.startswith("/"):
-                cfg[f"{chain}_base"] = f"{base_url}{path}"
-            else:
-                # Assume it's a port number without colon
-                cfg[f"{chain}_base"] = f"{base_url}:{path}"
-        else:
-            cfg[f"{chain}_base"] = ""
-    
     save_config(cfg)
     return redirect("/?pw=" + pw)
 
@@ -241,8 +118,6 @@ def test_webhook():
         ("XEC", cfg.get("xec_base", "").strip()),
         ("BTC", cfg.get("btc_base", "").strip()),
         ("DBG", cfg.get("dbg_base", "").strip()),
-        ("BC2", cfg.get("bc2_base", "").strip()),
-        ("BCH2", cfg.get("bch2_base", "").strip()),
     ]
     
     proxy_token = cfg.get("proxy_token", "").strip()
@@ -341,16 +216,25 @@ def test_webhook():
         return jsonify({"success": False, "error": f"Failed to send webhook: {str(e)}"}), 500
 
 if __name__ == "__main__":
-    print("=" * 50, flush=True)
-    print("ATH Monitor Web UI Starting...", flush=True)
-    print(f"Config path: {CONFIG_PATH}", flush=True)
-    print(f"Admin password: {'SET' if ADMIN_PASSWORD else 'NOT SET'}", flush=True)
-    print(f"Detected host IP: {get_host_ip()}", flush=True)
-    print("=" * 50, flush=True)
+    print("Starting ATH Monitor Web Service...", flush=True)
+    
+    # Test configuration load
     try:
-        app.run(host="0.0.0.0", port=3456, debug=False)
+        cfg = load_config()
+        print(f"Configuration loaded. Detected host: {get_host_ip()}", flush=True)
+        print(f"Configured endpoints: {len([x for x in cfg.values() if 'http' in str(x)])}", flush=True)
     except Exception as e:
-        print(f"FATAL ERROR: Failed to start Flask app: {e}", flush=True)
-        import traceback
-        traceback.print_exc()
-        raise
+        print(f"Warning: Configuration load failed: {e}", flush=True)
+    
+    print("Web service ready on port 3456", flush=True)
+    
+    # Keep the service running with proper error handling
+    try:
+        app.run(host="0.0.0.0", port=3456, debug=False, use_reloader=False)
+    except KeyboardInterrupt:
+        print("Service stopped by user", flush=True)
+    except Exception as e:
+        print(f"Service error: {e}", flush=True)
+        # Don't exit, let Docker restart handle it
+        import time
+        time.sleep(10)
