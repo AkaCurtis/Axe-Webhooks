@@ -47,10 +47,13 @@ def get_host_ip():
 def load_config():
     host_ip = get_host_ip()
     defaults = {
-        "bch_base": f"http://{host_ip}:21212",
-        "xec_base": f"http://{host_ip}:21218",
-        "btc_base": f"http://{host_ip}:21215",
-        "dbg_base": f"http://{host_ip}:21213",
+        "base_url": f"http://{host_ip}",
+        "bch_port": "21212",
+        "xec_port": "21218",
+        "btc_port": "21215",
+        "dbg_port": "21213",
+        "bc2_path": "",
+        "bch2_path": "",
         "proxy_token": "",
         "discord_webhook": "",
     }
@@ -91,10 +94,13 @@ def save():
         return redirect("/?pw=" + pw)
     
     cfg = {
-        "bch_base": request.form.get("bch_base", "").strip(),
-        "xec_base": request.form.get("xec_base", "").strip(),
-        "btc_base": request.form.get("btc_base", "").strip(),
-        "dbg_base": request.form.get("dbg_base", "").strip(),
+        "base_url": request.form.get("base_url", "").strip(),
+        "bch_port": request.form.get("bch_port", "").strip(),
+        "xec_port": request.form.get("xec_port", "").strip(),
+        "btc_port": request.form.get("btc_port", "").strip(),
+        "dbg_port": request.form.get("dbg_port", "").strip(),
+        "bc2_path": request.form.get("bc2_path", "").strip(),
+        "bch2_path": request.form.get("bch2_path", "").strip(),
         "proxy_token": request.form.get("proxy_token", "").strip(),
         "discord_webhook": request.form.get("discord_webhook", "").strip(),
     }
@@ -113,12 +119,33 @@ def test_webhook():
     if not webhook:
         return jsonify({"success": False, "error": "Discord webhook not configured"}), 400
     
-    chains = [
-        ("BCH", cfg.get("bch_base", "").strip()),
-        ("XEC", cfg.get("xec_base", "").strip()),
-        ("BTC", cfg.get("btc_base", "").strip()),
-        ("DBG", cfg.get("dbg_base", "").strip()),
-    ]
+    base_url = cfg.get("base_url", "").strip()
+    
+    # Build full URLs from base + port
+    chains = []
+    if cfg.get("bch_port"):
+        chains.append(("BCH", f"{base_url}:{cfg['bch_port']}"))
+    if cfg.get("xec_port"):
+        chains.append(("XEC", f"{base_url}:{cfg['xec_port']}"))
+    if cfg.get("btc_port"):
+        chains.append(("BTC", f"{base_url}:{cfg['btc_port']}"))
+    if cfg.get("dbg_port"):
+        chains.append(("DBG", f"{base_url}:{cfg['dbg_port']}"))
+    
+    # Handle BC2 and BCH2 with path or port
+    bc2_path = cfg.get("bc2_path", "").strip()
+    if bc2_path:
+        if bc2_path.startswith(":"):
+            chains.append(("BC2", f"{base_url}{bc2_path}"))
+        else:
+            chains.append(("BC2", f"{base_url}{bc2_path}"))
+    
+    bch2_path = cfg.get("bch2_path", "").strip()
+    if bch2_path:
+        if bch2_path.startswith(":"):
+            chains.append(("BCH2", f"{base_url}{bch2_path}"))
+        else:
+            chains.append(("BCH2", f"{base_url}{bch2_path}"))
     
     proxy_token = cfg.get("proxy_token", "").strip()
     cookies = {"UMBREL_PROXY_TOKEN": proxy_token} if proxy_token else None

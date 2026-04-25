@@ -34,13 +34,14 @@ log("=" * 50)
 
 def load_config() -> Dict[str, str]:
     defaults = {
-        "bch_base": "",
-        "xec_base": "",
-        "btc_base": "",
-        "dbg_base": "",
+        "base_url": "",
+        "bch_port": "",
+        "xec_port": "",
+        "btc_port": "",
+        "dbg_port": "",
+        "bc2_path": "",
+        "bch2_path": "",
         "dbg_algos": "sha256,scrypt",
-        "bc2_base": "",
-        "bch2_base": "",
         "proxy_token": "",
         "discord_webhook": "",
     }
@@ -55,11 +56,55 @@ def load_config() -> Dict[str, str]:
     except Exception:
         pass
 
-    # Normalize URLs
-    for k in ("bch_base", "xec_base", "btc_base", "dbg_base", "bc2_base", "bch2_base"):
-        defaults[k] = defaults[k].rstrip("/")
+    # Construct full URLs from base + port/path
+    base_url = defaults["base_url"].rstrip("/")
+    result = {
+        "proxy_token": defaults["proxy_token"],
+        "discord_webhook": defaults["discord_webhook"],
+        "dbg_algos": defaults["dbg_algos"],
+    }
+    
+    # Build full URLs for port-based chains
+    if defaults["bch_port"]:
+        result["bch_base"] = f"{base_url}:{defaults['bch_port']}"
+    else:
+        result["bch_base"] = ""
+    
+    if defaults["xec_port"]:
+        result["xec_base"] = f"{base_url}:{defaults['xec_port']}"
+    else:
+        result["xec_base"] = ""
+    
+    if defaults["btc_port"]:
+        result["btc_base"] = f"{base_url}:{defaults['btc_port']}"
+    else:
+        result["btc_base"] = ""
+    
+    if defaults["dbg_port"]:
+        result["dbg_base"] = f"{base_url}:{defaults['dbg_port']}"
+    else:
+        result["dbg_base"] = ""
+    
+    # Handle BC2 and BCH2 with path or port
+    bc2_path = defaults["bc2_path"]
+    if bc2_path:
+        if bc2_path.startswith(":"):
+            result["bc2_base"] = f"{base_url}{bc2_path}"
+        else:
+            result["bc2_base"] = f"{base_url}{bc2_path}"
+    else:
+        result["bc2_base"] = ""
+    
+    bch2_path = defaults["bch2_path"]
+    if bch2_path:
+        if bch2_path.startswith(":"):
+            result["bch2_base"] = f"{base_url}{bch2_path}"
+        else:
+            result["bch2_base"] = f"{base_url}{bch2_path}"
+    else:
+        result["bch2_base"] = ""
 
-    return defaults
+    return result
 
 
 # -----------------------------
