@@ -2,29 +2,31 @@
 
 Monitor your Axe mining pool workers and receive Discord notifications when they hit new All-Time High (ATH) best shares!
 
-![Version](https://img.shields.io/badge/version-0.5.5-blue)
+![Version](https://img.shields.io/badge/version-1.0.3-blue)
 ![Umbrel](https://img.shields.io/badge/platform-Umbrel-purple)
 
 ## 🎯 Overview
 
-Axe Webhooks is an Umbrel app that monitors your mining workers across multiple chains (BCH, XEC, BTC, DBG) and sends beautiful Discord notifications when a worker achieves a new best share. Track your mining progress and celebrate those near-block-solution moments!
+ATH Monitor is an Umbrel app that polls your solo mining pools every 15 seconds and sends a Discord notification whenever a worker achieves a new best share since the last block. It tracks each worker independently, persists state across restarts, and fires a special celebration embed when a worker's share meets or exceeds the current block difficulty (i.e. a block is found).
 
 ## ✨ Features
 
-- 🔍 **Multi-Chain Support**: Monitor BCH, XEC, BTC, and DBG pools simultaneously
-- 🔔 **Discord Notifications**: Beautiful embeds with worker stats, best shares, and block progress bars
-- 🌐 **Web UI**: Easy configuration through a user-friendly interface
-- 📊 **Pool Status Testing**: Test your webhook and view current pool stats
-- 🔄 **Auto-Detection**: Automatically detects your Umbrel host IP
-- 📈 **Progress Tracking**: Visual progress bars showing how close shares are to solving a block
-- 💾 **Persistent State**: Remembers worker ATHs across restarts
+- 🔍 **Multi-Chain Support**: BCH, XEC, BTC, DBG (multi-algo: SHA256 + Scrypt), BC2, BCH2, and PowPow
+- 🔔 **Discord Notifications**: Rich embeds with worker name, best share, block difficulty, and a visual progress bar
+- 🎉 **Block Detection**: Fires a separate celebration embed (with Kirby gif) when a worker solves a block
+- 🌐 **Web UI**: Configure everything through a browser — no terminal needed
+- 🧪 **Test Webhook**: One-click test that shows live status of every configured pool in Discord
+- 🔄 **Auto IP Detection**: Automatically detects your Umbrel host IP from the Docker gateway
+- 📊 **Per-Algo Tracking**: DBG monitors each configured algorithm (SHA256, Scrypt, etc.) in separate threads
+- 💾 **Persistent State**: Per-chain JSON state files survive container restarts without triggering duplicate alerts
+- 🔒 **Optional Password**: Protect the config UI with `ADMIN_PASSWORD` environment variable
 
 ## 📋 Requirements
 
 - Umbrel home server
-- Axe mining pool apps installed (AxeBCH, AxeXEC, AxeBTC, and/or AxeDBG)
+- One or more Axe mining pool apps (AxeBCH, AxeXEC, AxeBTC, AxeDBG, etc.) **or** a PowPow pool
 - Discord webhook URL
-- Umbrel Proxy Token (for accessing local Axe APIs)
+- Umbrel Proxy Token (pre-filled with a working default — only change if yours differs)
 
 ## 🚀 Installation
 
@@ -32,214 +34,196 @@ Axe Webhooks is an Umbrel app that monitors your mining workers across multiple 
 
 1. Open your Umbrel dashboard
 2. Go to **App Store** → **Community App Stores**
-3. Add the community app store using this GitHub link:
+3. Add this store URL:
    ```
    https://github.com/AkaCurtis/Axe-Webhooks
    ```
-4. Once added, find "ATH Monitor" in your app store
-5. Click **Install**
+4. Find **ATH Monitor** in the store and click **Install**
 
 ## ⚙️ Configuration
 
 ### Step 1: Access the Web UI
 
-1. Open Axe Webhooks from your Umbrel apps
-2. The configuration page will load
+Open ATH Monitor from your Umbrel apps (port `3456`). The configuration page loads automatically.
 
-### Step 2: Get Your Umbrel Proxy Token
+### Step 2: Pool Endpoints
 
-The proxy token is required to access your local Axe pool APIs. The cookie is **HttpOnly** (for security), so you need to use browser DevTools to extract it:
+The app auto-detects your Umbrel host IP and pre-fills sensible defaults:
 
-#### Method 1: Browser DevTools - Cookies (Recommended)
+| Chain | Default Port/Path |
+|-------|------------------|
+| BCH   | `21212`          |
+| XEC   | `21218`          |
+| BTC   | `21215`          |
+| DBG   | `21213`          |
+| BC2   | path or port (e.g. `:21216` or `/bc2`) |
+| BCH2  | path or port |
+| PowPow | full URL or plain IP (see below) |
 
-1. Open any Axe app in your browser (e.g., `http://umbrel.local:21212/` for AxeBCH)
-2. Open Browser Developer Tools:
-   - **Chrome/Edge**: Press `F12` or right-click → "Inspect"
-   - **Firefox**: Press `F12` or right-click → "Inspect Element"
-   - **Safari**: Enable Developer Menu first, then press `Option + Command + I`
+Leave any chain blank to skip monitoring it.
 
-3. Go to the **Application** tab (Chrome/Edge) or **Storage** tab (Firefox)
-4. In the left sidebar, expand **Cookies**
-5. Click on your Umbrel domain (e.g., `http://umbrel.local:21212`)
-6. Find the cookie named `UMBREL_PROXY_TOKEN`
-7. Copy the **Value** (it will be a long JWT token starting with `eyJ...`)
+### Step 3: PowPow Pool (Optional)
 
-#### Method 2: Network Tab - Request Headers
+The **PowPow IP** field accepts either a plain IP or a full URL:
 
-1. Open any Axe app in your browser (e.g., `http://umbrel.local:21212/`)
-2. Press `F12` and go to the **Network** tab
-3. Refresh the page or navigate within the app
-4. Click on any request in the list
-5. Look at the **Request Headers** section
-6. Find the `Cookie:` header
-7. Copy the value after `UMBREL_PROXY_TOKEN=` (everything until the next `;` or end of line)
+| What you enter | What the app uses |
+|---|---|
+| `185.147.157.78` | `http://185.147.157.78:21221` |
+| `http://185.147.157.78:21221` | `http://185.147.157.78:21221` |
+| `http://hostname:3000` | `http://hostname:3000` |
 
-> **Note**: The token is a JWT that looks like: `eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...`
-> **Umbrel proxy token generation issue**: If the app cannot auto-detect `JWT_SECRET`, make sure your Axe app `.env` is mounted into the container or set `JWT_SECRET` directly in the environment.
-### Step 3: Get Your Discord Webhook URL
+If you leave it blank, the app defaults to `http://willitmod-dev-powpow_app_1:3000` (the internal Docker service name for PowPow running on the same Umbrel).
 
-1. Open Discord and go to the server where you want notifications
-2. Go to **Server Settings** → **Integrations** → **Webhooks**
-3. Click **New Webhook** (or use an existing one)
-4. Customize the webhook name and channel
-5. Click **Copy Webhook URL**
-6. Save the webhook
+### Step 4: Proxy Token
 
-### Step 4: Configure Pool Endpoints
+The proxy token is pre-filled with a working default. Only change it if your Axe pool APIs return `401` errors.
 
-In the Axe Webhooks web UI:
+To get a fresh token:
 
-1. **Pool URLs**: The app auto-detects your Umbrel IP. Default values are:
-   - BCH: `http://[YOUR_UMBREL_IP]:21212`
-   - XEC: `http://[YOUR_UMBREL_IP]:21218`
-   - BTC: `http://[YOUR_UMBREL_IP]:21215`
-   - DBG: `http://[YOUR_UMBREL_IP]:21213`
-   
-   You typically won't need to change these unless you have custom ports.
+1. Open any Axe app in your browser (e.g. `http://umbrel.local:21212/`)
+2. Open DevTools → **Application** tab → **Cookies**
+3. Copy the value of `UMBREL_PROXY_TOKEN`
 
-2. **Proxy Token**: Paste the `UMBREL_PROXY_TOKEN` value you copied earlier
+> PowPow bypasses the Umbrel proxy entirely — no token needed for it.
 
-3. **Discord Webhook**: Paste your Discord webhook URL
+### Step 5: Discord Webhook
 
-4. Click **Save Configuration**
+1. In Discord: **Server Settings** → **Integrations** → **Webhooks** → **New Webhook**
+2. Pick a channel, copy the URL, paste it into the **Discord Webhook** field
 
-### Step 5: Test Your Setup
+### Step 6: DBG Algo List
 
-1. Click the **Test Webhook** button in the web UI
-2. Check your Discord channel for a test message showing current pool status
-3. If successful, you're all set! If not, check the troubleshooting section below
+The **DBG Algos** field controls which algorithms are monitored on your DigiByte pool. Default: `sha256,scrypt`. Add or remove algorithms as a comma-separated list.
 
-## 📱 Usage
+### Step 7: Save & Test
 
-Once configured, the app runs automatically in the background:
+Click **Save Configuration**, then **Test Webhook**. You'll get a Discord embed showing live status for every configured pool.
 
-1. **Monitoring**: The watcher checks your pools every 15 seconds (configurable)
-2. **Detection**: When a worker achieves a new best share, it's compared against the stored ATH
-3. **Notification**: If it's a new ATH, a Discord notification is sent with:
-   - Worker name
-   - Best share value
-   - Current block difficulty
-   - Progress bar showing proximity to solving a block
-4. **State Tracking**: ATH values are persisted, so restarts won't trigger duplicate notifications
+## 📱 How It Works
+
+1. **Polling**: Each chain runs in its own background thread, polling every `POLL_SECONDS` (default: `15`)
+2. **Per-Worker Tracking**: Best share (`bestshare_since_block`) is tracked individually per worker
+3. **New Best**: If the current value exceeds the stored value → Discord alert + state update
+4. **Reset Detection**: If the current value drops below the stored value → the tracker re-bases (worker found a block or stats were reset)
+5. **Block Hit**: If best share ≥ network difficulty → celebration embed fires instead of the normal ATH embed
 
 ### Discord Notification Format
 
-When a worker hits a new ATH, you'll receive an embed like this:
-
+**Normal ATH:**
 ```
 🔥 NEW WORKER ATH! (BCH)
-[Worker Name] just hit a new best share!
+[Worker] just hit a new best share!
 
-🏷 Worker: [Worker Display Name]
-🎯 Best Share: [Formatted Value]
-⛏ Block Diff: [Network Difficulty]
-📈 Progress to Block: [████████░░░░░░░░░░] XX.XX%
+🏷 Worker:            [Name]
+🎯 Best Share:        123.45M
+⛏ Block Diff:         456.78G
+📈 Progress to Block: ████████░░░░░░░░░░ 27.00%
+```
+
+**Block found:**
+```
+🎉 [Worker] just hit a block! (BCH)
+[Worker] found a block with this share! Congratulations! 🎊
+... (same fields + Kirby gif)
+```
+
+**Test webhook embed (per pool):**
+```
+✅ BCH Pool
+👷 Workers: 2
+⚡ Hashrate: 1.23TH/s
+🎯 Difficulty: 456.78G
+
+✅ POWPOW Pool
+👷 Workers: 1
+⚡ Hashrate: 458.13MH/s
+🎯 Difficulty (LTC): 90.83M
+🎯 Difficulty (DOGE): 44.62M
 ```
 
 ## 🔧 Advanced Configuration
 
 ### Environment Variables
 
-#### Admin Password
-Protect your configuration with a password:
-```yaml
-environment:
-  ADMIN_PASSWORD: "your-secure-password"
-```
-
-#### Poll Interval
-Adjust how often pools are checked (in seconds):
-```yaml
-environment:
-  POLL_SECONDS: "15"  # Default is 15 seconds
-```
+| Variable | Default | Description |
+|---|---|---|
+| `POLL_SECONDS` | `15` | How often (in seconds) each chain is polled |
+| `ADMIN_PASSWORD` | *(unset)* | If set, the web UI requires this password |
 
 ### Data Persistence
 
-Configuration and state files are stored in `${APP_DATA_DIR}`:
-- `config.json`: Your configuration (URLs, tokens, webhook)
-- `bch_state.json`, `xec_state.json`, etc.: ATH tracking for each chain
+All files are stored in `${APP_DATA_DIR}` (mapped to `/data` inside containers):
+
+| File | Contents |
+|---|---|
+| `config.json` | All user configuration |
+| `bch_state.json` | BCH worker ATH tracking |
+| `xec_state.json` | XEC worker ATH tracking |
+| `btc_state.json` | BTC worker ATH tracking |
+| `bc2_state.json` | BC2 worker ATH tracking |
+| `bch2_state.json` | BCH2 worker ATH tracking |
+| `powpow_state.json` | PowPow worker ATH tracking |
+| `dbg_<algo>_state.json` | DBG per-algo ATH tracking |
 
 ## 🐛 Troubleshooting
 
-### "Webhook not configured" or "Pool offline" errors
+### Pool shows "Offline" in test webhook
 
-1. **Verify Axe apps are running**: Make sure your AxeBCH, AxeXEC, etc. apps are started
-2. **Check proxy token**: Ensure the token is current (Umbrel may rotate tokens on restart)
-3. **Validate URLs**: Confirm pool URLs match your Umbrel IP and ports
-4. **Test webhook**: Use the Test Webhook button to diagnose issues
+- Confirm the Axe app is running in Umbrel
+- Check the port/path matches what your Axe pool actually listens on
+- For PowPow: make sure the URL includes the correct port (e.g. `:21221` or `:3000`)
 
 ### Discord notifications not appearing
 
-1. **Check webhook URL**: Ensure you copied the full Discord webhook URL
-2. **Verify permissions**: Make sure the webhook has permission to post in the channel
-3. **Check Discord server status**: Ensure Discord isn't experiencing outages
+- Verify the full webhook URL is pasted correctly
+- Confirm the webhook has permission to post in the target channel
+- Click **Test Webhook** — if it succeeds there but ATH alerts don't fire, workers may not be achieving new bests yet
 
-### Workers not being detected
+### Proxy token errors (401 / Invalid JSON)
 
-1. **Verify workers are active**: Check your mining software is running and connected
-2. **Check pool response**: Use the Test Webhook feature to see if workers appear in the status
-3. **Review logs**: Check Umbrel app logs for error messages
+The default token works for most installs. If yours is rotated:
+1. Extract a fresh `UMBREL_PROXY_TOKEN` from browser DevTools (see Step 4 above)
+2. Paste it into the web UI and save
 
 ### Auto-detection of Umbrel IP fails
 
-If the app can't detect your Umbrel IP:
+Manually enter your Umbrel server IP in the **Base URL** field (e.g. `http://192.168.1.50`). Find your IP under **Umbrel Settings → About**.
 
-1. Manually enter your Umbrel server IP in the pool URL fields
-2. Common Umbrel IPs: `192.168.1.X`, `10.0.0.X` (check your router)
-3. You can find your Umbrel IP in: **Umbrel Settings** → **About**
+### Workers not tracked after a restart
 
-### Proxy token expires
+State files persist across restarts automatically. If a worker's best share resets (new block found), the tracker re-bases cleanly — no duplicate notifications.
 
-Umbrel may rotate the proxy token after updates or restarts:
-
-1. Get a fresh token using the steps in Configuration
-2. Update it in the Axe Webhooks web UI
-3. Save and test again
-
-## 📊 Monitored Metrics
-
-For each chain, the app tracks:
-- Worker names and display names
-- Current hashrate (per worker and total)
-- Best shares (all-time high per worker)
-- Network difficulty
-- Block progress percentage
-
-## 🛠️ Development
-
-### Project Structure
+## 🛠️ Project Structure
 
 ```
 axe-webhooks/
-├── docker-compose.yml          # Docker orchestration
-├── umbrel-app.yml             # Umbrel app manifest
-├── watcher/                   # Background monitoring service
-│   ├── Dockerfile
-│   ├── requirements.txt
-│   └── watcher.py            # Main monitoring logic
-└── web/                       # Configuration web UI
-    ├── Dockerfile
-    ├── app.py                # Flask web server
-    └── templates/
-        └── index.html        # Configuration interface
+├── axe-webhooks/
+│   ├── docker-compose.yml     # Docker orchestration
+│   └── umbrel-app.yml         # Umbrel app manifest
+└── src/
+    ├── watcher/
+    │   ├── Dockerfile
+    │   ├── requirements.txt
+    │   └── watcher.py         # Multi-threaded polling & Discord alerts
+    └── web/
+        ├── Dockerfile
+        ├── app.py             # Flask config UI & test webhook endpoint
+        └── templates/
+            └── index.html     # Configuration interface
 ```
 
-### Building Locally
+## 📊 Monitored Metrics (per worker)
 
-```bash
-cd axe-webhooks
-docker-compose build
-docker-compose up
-```
+- `bestshare_since_block` — best share value since last block (the ATH trigger)
+- `network_difficulty` — current block difficulty (used for progress bar & block detection)
+- `hashrate_ths` — worker hashrate
+- `ltcDiff` / `dogeDiff` — PowPow per-algo difficulties (from timeseries)
 
 ## 📄 License
 
-MIT License - See LICENSE file for details
+MIT License
 
 ## 🤝 Contributing
-
-Contributions are welcome! Please:
 
 1. Fork the repository
 2. Create a feature branch
@@ -253,19 +237,12 @@ Contributions are welcome! Please:
 
 ## 💰 Support the Project
 
-If you find this app useful and want to support development, donations are greatly appreciated!
-
-### Cryptocurrency
-
 - **Bitcoin Cash (BCH)**: `bitcoincash:qpx8jdmgef3z3zj3a4r2p2fykql2stkzpcgnlvy6k6`
 - **Bitcoin (BTC)**: `36hE3rMDd5D3tKXwyBwb6osCaS8WaEobMQ`
 - **eCash (XEC)**: `ecash:qzupqgsekhsc9t0zgkcvt6c6m5k07xrruqx9rz4z9x`
-
-### Fiat
-
 - **CashApp**: [$WRDSY](https://cash.app/$WRDSY)
 
-Every contribution helps maintain and improve ATH Monitor. Thank you for your support! ⚡
+Every contribution helps maintain and improve ATH Monitor. Thank you! ⚡
 
 ## 👨‍💻 Credits
 
