@@ -44,7 +44,7 @@ def load_config() -> Dict[str, str]:
         "dbg_algos": "sha256,scrypt",
         "proxy_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJwcm94eVRva2VuIjp0cnVlLCJpYXQiOjE3NzkzODg0NDgsImV4cCI6MTgxMDkyNDQ0OH0.o20tIwVo03PvOJCG9ijLW-1XD3Pcy9bfKpP33vYL90U",
         "discord_webhook": "",
-        "powpow_url": "",
+        "powpow_ip": "",
     }
 
     try:
@@ -86,8 +86,8 @@ def load_config() -> Dict[str, str]:
     else:
         result["dbg_base"] = ""
 
-    if defaults["powpow_url"]:
-        result["powpow_base"] = defaults["powpow_url"].rstrip("/")
+    if defaults["powpow_ip"]:
+        result["powpow_base"] = f"http://{defaults['powpow_ip']}:21221"
     else:
         result["powpow_base"] = ""
 

@@ -57,7 +57,7 @@ def load_config():
         "bch2_path": "",
         "proxy_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJwcm94eVRva2VuIjp0cnVlLCJpYXQiOjE3NzkzODg0NDgsImV4cCI6MTgxMDkyNDQ0OH0.o20tIwVo03PvOJCG9ijLW-1XD3Pcy9bfKpP33vYL90U",
         "discord_webhook": "",
-        "powpow_url": "",
+        "powpow_ip": "",
     }
     try:
         with open(CONFIG_PATH, "r", encoding="utf-8") as f:
@@ -105,7 +105,7 @@ def save():
         "bch2_path": request.form.get("bch2_path", "").strip(),
         "proxy_token": request.form.get("proxy_token", "").strip(),
         "discord_webhook": request.form.get("discord_webhook", "").strip(),
-        "powpow_url": request.form.get("powpow_url", "").strip(),
+        "powpow_ip": request.form.get("powpow_ip", "").strip(),
     }
     save_config(cfg)
     return redirect("/?pw=" + pw)
@@ -221,8 +221,8 @@ def test_webhook():
             })
 
     # --- PowPow pool (/api/status single endpoint, external host) ---
-    powpow_url = cfg.get("powpow_url", "").strip()
-    powpow_base = powpow_url.rstrip("/") if powpow_url else ""
+    powpow_ip = cfg.get("powpow_ip", "").strip()
+    powpow_base = f"http://{powpow_ip}:21221" if powpow_ip else ""
     if powpow_base:
         try:
             status_resp = requests.get(
