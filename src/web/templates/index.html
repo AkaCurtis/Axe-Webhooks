@@ -1,0 +1,523 @@
+<!doctype html>
+<html lang="en" data-bs-theme="dark">
+<head>
+  <meta charset="utf-8"/>
+  <meta name="viewport" content="width=device-width, initial-scale=1"/>
+  <title>ATH Monitor Settings</title>
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" rel="stylesheet">
+  <style>
+    body { 
+      background: linear-gradient(135deg, #1a1d29 0%, #2d1b3d 100%);
+      min-height: 100vh;
+      padding: 2rem 0;
+    }
+    .main-card {
+      box-shadow: 0 10px 40px rgba(0,0,0,0.3);
+      border: 1px solid rgba(255,255,255,0.1);
+    }
+    .card-header {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      border-bottom: none;
+    }
+    .form-label {
+      font-weight: 600;
+      color: #e0e0e0;
+      margin-bottom: 0.5rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .form-label-sm {
+      font-size: 0.9rem;
+      margin-bottom: 0.3rem;
+    }
+    .form-control {
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.1);
+      color: #fff;
+    }
+    .form-control:focus {
+      background: rgba(255,255,255,0.08);
+      border-color: #667eea;
+      box-shadow: 0 0 0 0.25rem rgba(102, 126, 234, 0.25);
+      color: #fff;
+    }
+    .btn-save {
+      background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+      border: none;
+      padding: 0.75rem 2rem;
+      font-weight: 600;
+      letter-spacing: 0.5px;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .btn-save:hover {
+      background: linear-gradient(135deg, #5568d3 0%, #654393 100%);
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+    }
+    .alert-custom {
+      background: rgba(255, 193, 7, 0.15);
+      border: 1px solid rgba(255, 193, 7, 0.4);
+      color: #ffc107;
+    }
+    .hint-text {
+      font-size: 0.85rem;
+      color: #999;
+      margin-top: 0.25rem;
+    }
+    .crypto-badge {
+      display: inline-block;
+      padding: 0.25rem 0.6rem;
+      border-radius: 0.375rem;
+      font-size: 0.75rem;
+      font-weight: 600;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    .badge-bch { background: linear-gradient(135deg, #8dc351 0%, #5cb85c 100%); }
+    .badge-xec { background: linear-gradient(135deg, #0074c2 0%, #005a99 100%); }
+    .badge-btc { background: linear-gradient(135deg, #f7931a 0%, #d97706 100%); }
+    .badge-dbg { background: linear-gradient(135deg, #dc3545 0%, #b02a37 100%); }
+    .badge-bc2 { background: linear-gradient(135deg, #3498db 0%, #2980b9 100%); }
+    .badge-bch2 { background: linear-gradient(135deg, #27ae60 0%, #229954 100%); }
+    .badge-eth { background: linear-gradient(135deg, #627eea 0%, #4e5fa6 100%); }
+    .badge-ltc { background: linear-gradient(135deg, #838383 0%, #5a5a5a 100%); }
+    .badge-doge { background: linear-gradient(135deg, #c3a634 0%, #9a8328 100%); }
+    .badge-powpow { background: linear-gradient(135deg, #9b59b6 0%, #7d3c98 100%); }
+    .donate-section {
+      background: rgba(141, 195, 81, 0.1);
+      border: 1px solid rgba(141, 195, 81, 0.3);
+      border-radius: 0.5rem;
+      padding: 1rem;
+      margin-top: 1.5rem;
+    }
+    .donate-btn {
+      background: linear-gradient(135deg, #8dc351 0%, #5cb85c 100%);
+      border: none;
+      color: white;
+      padding: 0.5rem 1.5rem;
+      border-radius: 0.375rem;
+      font-weight: 600;
+      text-decoration: none;
+      display: inline-block;
+      transition: transform 0.2s, box-shadow 0.2s;
+    }
+    .donate-btn:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 8px 20px rgba(141, 195, 81, 0.4);
+      color: white;
+    }
+    .crypto-address {
+      background: rgba(255,255,255,0.05);
+      border: 1px solid rgba(255,255,255,0.1);
+      padding: 0.5rem 1rem;
+      border-radius: 0.375rem;
+      font-family: monospace;
+      font-size: 0.85rem;
+      word-break: break-all;
+      cursor: pointer;
+      transition: background 0.2s;
+      margin-bottom: 0.75rem;
+    }
+    .crypto-address:hover {
+      background: rgba(255,255,255,0.08);
+    }
+    .crypto-address:last-child {
+      margin-bottom: 0;
+    }
+  </style>
+</head>
+<body>
+  <div class="container" style="max-width: 800px;">
+    <div class="card main-card">
+      <div class="card-header py-3">
+        <h3 class="mb-0 text-white">
+          <i class="bi bi-graph-up-arrow me-2"></i>
+          ATH Monitor Settings
+        </h3>
+        <small class="text-white-50">Configure your mining node endpoints and Discord alerts</small>
+      </div>
+      
+      <div class="card-body p-4">
+        <div class="alert alert-info">
+          <i class="bi bi-info-circle me-2"></i>
+          <strong>Auto-detected Umbrel IP:</strong> <code>{{ detected_ip }}</code>
+          <br><small class="text-white-50">Base URL will be combined with ports below.</small>
+        </div>
+
+        <form method="post" action="/save">
+          <div class="mb-4">
+            <label class="form-label">
+              <i class="bi bi-server"></i> Base URL
+            </label>
+            <input name="base_url" value="{{ cfg.base_url }}" class="form-control" placeholder="http://{{ detected_ip }}" required/>
+            <div class="hint-text">
+              <i class="bi bi-info-circle me-1"></i>Enter the base address without port (e.g., http://{{ detected_ip }})
+            </div>
+          </div>
+
+          <div class="row g-3">
+            <div class="col-12">
+              <label class="form-label">
+                <i class="bi bi-plug"></i> Pool Ports
+              </label>
+            </div>
+            
+            <div class="col-md-4 col-sm-6">
+              <label class="form-label form-label-sm">
+                <span class="crypto-badge badge-bch">BCH</span>
+              </label>
+              <input name="bch_port" value="{{ cfg.bch_port }}" class="form-control" placeholder="21212" type="number"/>
+            </div>
+
+            <div class="col-md-4 col-sm-6">
+              <label class="form-label form-label-sm">
+                <span class="crypto-badge badge-xec">XEC</span>
+              </label>
+              <input name="xec_port" value="{{ cfg.xec_port }}" class="form-control" placeholder="21218" type="number"/>
+            </div>
+
+            <div class="col-md-4 col-sm-6">
+              <label class="form-label form-label-sm">
+                <span class="crypto-badge badge-btc">BTC</span>
+              </label>
+              <input name="btc_port" value="{{ cfg.btc_port }}" class="form-control" placeholder="21215" type="number"/>
+            </div>
+
+            <div class="col-md-4 col-sm-6">
+              <label class="form-label form-label-sm">
+                <span class="crypto-badge badge-dbg">DBG</span>
+              </label>
+              <input name="dbg_port" value="{{ cfg.dbg_port }}" class="form-control" placeholder="21213" type="number"/>
+            </div>
+
+            <div class="col-12 mt-3">
+              <label class="form-label">
+                <i class="bi bi-folder"></i> BC2 & BCH2 (Path or Port)
+              </label>
+              <div class="hint-text" style="margin-top: -0.5rem; margin-bottom: 0.5rem;">
+                <i class="bi bi-info-circle me-1"></i>For 5tatumOS: use path like <code>/apps/axebc2/</code>. For port: <code>:2345</code>
+              </div>
+            </div>
+
+            <div class="col-md-6 col-sm-6">
+              <label class="form-label form-label-sm">
+                <span class="crypto-badge badge-bc2">BC2</span>
+              </label>
+              <input name="bc2_path" value="{{ cfg.bc2_path }}" class="form-control" placeholder="/apps/axebc2/ or :21219"/>
+            </div>
+
+            <div class="col-md-6 col-sm-6">
+              <label class="form-label form-label-sm">
+                <span class="crypto-badge badge-bch2">BCH2</span>
+              </label>
+              <input name="bch2_path" value="{{ cfg.bch2_path }}" class="form-control" placeholder="/apps/axebch2/ or :21223"/>
+            </div>
+          </div>
+
+          <div class="mt-3">
+            <label class="form-label">
+              <i class="bi bi-globe"></i> PowPow Pool URL
+            </label>
+            <input name="powpow_url" value="{{ cfg.powpow_url }}" class="form-control" placeholder="http://185.147.157.78:21221"/>
+            <div class="hint-text">
+              <i class="bi bi-info-circle me-1"></i>Full URL for the <span class="crypto-badge badge-powpow">POWPOW</span> pool — uses <code>/api/status</code> (no proxy token required)
+            </div>
+          </div>
+
+          <div class="mt-4">
+            <label class="form-label">
+              <i class="bi bi-shield-check"></i> Umbrel Proxy Token
+            </label>
+            <div class="d-flex gap-2">
+              <input id="proxyTokenInput" name="proxy_token" value="{{ cfg.proxy_token }}" class="form-control font-monospace" placeholder="Paste token or generate below" style="font-size:0.78rem;"/>
+              <button type="button" class="btn btn-outline-warning flex-shrink-0" id="genTokenBtn" style="white-space:nowrap;">
+                <i class="bi bi-key me-1"></i>Generate
+              </button>
+            </div>
+
+            <!-- Progress area (hidden by default) -->
+            <div id="genTokenProgress" style="display:none;" class="mt-3">
+              <div class="d-flex justify-content-between mb-1">
+                <small id="genTokenStep" class="text-warning">Starting...</small>
+                <small id="genTokenPct" class="text-muted">0%</small>
+              </div>
+              <div class="progress" style="height:6px; background:rgba(255,255,255,0.08);">
+                <div id="genTokenBar" class="progress-bar bg-warning progress-bar-striped progress-bar-animated"
+                     role="progressbar" style="width:0%;"></div>
+              </div>
+            </div>
+
+            <div id="genTokenResult" class="mt-2" style="display:none;"></div>
+
+            <div class="hint-text mt-1">
+              <i class="bi bi-info-circle me-1"></i>Click <strong>Generate</strong> to create a fresh token valid for 13 months using this node's JWT secret.
+            </div>
+          </div>
+
+          <div class="mt-4">
+            <label class="form-label">
+              <i class="bi bi-discord"></i> Discord Webhook URL
+            </label>
+            <input name="discord_webhook" value="{{ cfg.discord_webhook }}" class="form-control" placeholder="https://discord.com/api/webhooks/..."/>
+            <div class="hint-text">
+              <i class="bi bi-info-circle me-1"></i>Where to send ATH notifications
+            </div>
+          </div>
+
+          <div class="row g-2 mt-4">
+            <div class="col-md-6">
+              <button type="submit" class="btn btn-primary btn-save btn-lg w-100">
+                <i class="bi bi-save me-2"></i>Save Configuration
+              </button>
+            </div>
+            <div class="col-md-6">
+              <button type="button" class="btn btn-outline-info btn-lg w-100" id="testBtn">
+                <i class="bi bi-send me-2"></i>Test Webhook
+              </button>
+            </div>
+          </div>
+          
+          <div id="testResult" class="mt-3" style="display: none;"></div>
+        </form>
+
+        <div class="donate-section">
+          <div class="text-center mb-3">
+            <h6 class="mb-1">
+              <i class="bi bi-heart-fill text-danger me-2"></i>
+              Support Development
+            </h6>
+            <small class="text-muted">If this tool helps you, consider a donation! Click any address to copy.</small>
+          </div>
+          
+          <div class="crypto-address" data-address="0x6731a52c5cb21d842261c721824923c9712ee95d" title="Click to copy">
+            <div class="d-flex align-items-center justify-content-between mb-1">
+              <span class="crypto-badge badge-eth">ETH</span>
+              <small class="text-success copy-feedback" style="display:none;"><i class="bi bi-check-circle"></i> Copied!</small>
+            </div>
+            <div class="text-break">0x6731a52c5cb21d842261c721824923c9712ee95d</div>
+          </div>
+
+          <div class="crypto-address" data-address="bc1q37dlrvl0ls0em9ue6ypzlshpnqtyw0avkvwt35" title="Click to copy">
+            <div class="d-flex align-items-center justify-content-between mb-1">
+              <span class="crypto-badge badge-btc">BTC</span>
+              <small class="text-success copy-feedback" style="display:none;"><i class="bi bi-check-circle"></i> Copied!</small>
+            </div>
+            <div class="text-break">bc1q37dlrvl0ls0em9ue6ypzlshpnqtyw0avkvwt35</div>
+          </div>
+
+          <div class="crypto-address" data-address="ltc1qsyny65w69c9n7fqv4g3vnktr4n0mcz28ne9qwe" title="Click to copy">
+            <div class="d-flex align-items-center justify-content-between mb-1">
+              <span class="crypto-badge badge-ltc">LTC</span>
+              <small class="text-success copy-feedback" style="display:none;"><i class="bi bi-check-circle"></i> Copied!</small>
+            </div>
+            <div class="text-break">ltc1qsyny65w69c9n7fqv4g3vnktr4n0mcz28ne9qwe</div>
+          </div>
+
+          <div class="crypto-address" data-address="DEMedHZesQYamDQ3tyQeWuuJSN4ieqyjuH" title="Click to copy">
+            <div class="d-flex align-items-center justify-content-between mb-1">
+              <span class="crypto-badge badge-doge">DOGE</span>
+              <small class="text-success copy-feedback" style="display:none;"><i class="bi bi-check-circle"></i> Copied!</small>
+            </div>
+            <div class="text-break">DEMedHZesQYamDQ3tyQeWuuJSN4ieqyjuH</div>
+          </div>
+
+          <div class="crypto-address" data-address="bitcoincash:qpx8jdmgef3z3zj3a4r2p2fykql2stkzpcgnlvy6k6" title="Click to copy">
+            <div class="d-flex align-items-center justify-content-between mb-1">
+              <span class="crypto-badge badge-bch">BCH</span>
+              <small class="text-success copy-feedback" style="display:none;"><i class="bi bi-check-circle"></i> Copied!</small>
+            </div>
+            <div class="text-break">bitcoincash:qpx8jdmgef3z3zj3a4r2p2fykql2stkzpcgnlvy6k6</div>
+          </div>
+        </div>
+      </div>
+
+      <div class="card-footer text-muted text-center py-3">
+        <small>
+          <i class="bi bi-database me-1"></i>
+          Settings saved to <code>/data/config.json</code> • Watcher auto-reloads every 15 seconds
+        </small>
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  <script>
+    // Copy crypto addresses to clipboard
+    function copyToClipboard(text, feedbackElement) {
+      // Try modern clipboard API first
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(text).then(() => {
+          showCopyFeedback(feedbackElement);
+        }).catch(err => {
+          // Fallback to old method
+          fallbackCopyToClipboard(text, feedbackElement);
+        });
+      } else {
+        // Use fallback for older browsers
+        fallbackCopyToClipboard(text, feedbackElement);
+      }
+    }
+
+    function fallbackCopyToClipboard(text, feedbackElement) {
+      const textArea = document.createElement('textarea');
+      textArea.value = text;
+      textArea.style.position = 'fixed';
+      textArea.style.left = '-999999px';
+      document.body.appendChild(textArea);
+      textArea.select();
+      try {
+        document.execCommand('copy');
+        showCopyFeedback(feedbackElement);
+      } catch (err) {
+        console.error('Failed to copy:', err);
+      }
+      document.body.removeChild(textArea);
+    }
+
+    function showCopyFeedback(feedbackElement) {
+      feedbackElement.style.display = 'inline';
+      setTimeout(() => {
+        feedbackElement.style.display = 'none';
+      }, 2000);
+    }
+
+    // Wait for DOM to be ready
+    document.addEventListener('DOMContentLoaded', function() {
+      document.querySelectorAll('.crypto-address').forEach(element => {
+        element.addEventListener('click', function() {
+          const address = this.getAttribute('data-address');
+          const feedback = this.querySelector('.copy-feedback');
+          copyToClipboard(address, feedback);
+        });
+      });
+    });
+
+    // ── Generate Proxy Token ──────────────────────────────────────────────
+    const STEPS = [
+      { pct: 20, msg: '<i class="bi bi-box-arrow-in-down me-1"></i>Reading JWT secret from node…' },
+      { pct: 55, msg: '<i class="bi bi-cpu me-1"></i>Signing token (HS256)…' },
+      { pct: 80, msg: '<i class="bi bi-cloud-upload me-1"></i>Saving to config…' },
+      { pct: 100, msg: '<i class="bi bi-check-circle-fill me-1"></i>Done!' },
+    ];
+
+    function setProgress(pct, msg) {
+      document.getElementById('genTokenBar').style.width = pct + '%';
+      document.getElementById('genTokenPct').textContent = pct + '%';
+      document.getElementById('genTokenStep').innerHTML = msg;
+    }
+
+    document.getElementById('genTokenBtn').addEventListener('click', async function () {
+      const btn = this;
+      const progressEl = document.getElementById('genTokenProgress');
+      const resultEl   = document.getElementById('genTokenResult');
+      const tokenInput = document.getElementById('proxyTokenInput');
+
+      btn.disabled = true;
+      btn.innerHTML = '<span class="spinner-border spinner-border-sm me-1"></span>Working…';
+      progressEl.style.display = 'block';
+      resultEl.style.display = 'none';
+      setProgress(0, 'Connecting to token service…');
+
+      // Animate through the first three steps before the real call
+      for (let i = 0; i < STEPS.length - 1; i++) {
+        await new Promise(r => setTimeout(r, 420));
+        setProgress(STEPS[i].pct, STEPS[i].msg);
+      }
+
+      try {
+        const pw = new URLSearchParams(window.location.search).get('pw') || '';
+        const resp = await fetch('/gen-token' + (pw ? '?pw=' + encodeURIComponent(pw) : ''));
+        const data = await resp.json();
+
+        if (data.success) {
+          setProgress(100, STEPS[STEPS.length - 1].msg);
+          document.getElementById('genTokenBar').classList.remove('progress-bar-animated');
+          document.getElementById('genTokenBar').classList.replace('bg-warning', 'bg-success');
+
+          tokenInput.value = data.token;
+
+          // Auto-save the new token
+          const formData = new FormData(document.querySelector('form'));
+          formData.set('proxy_token', data.token);
+          await fetch('/save', { method: 'POST', body: formData });
+
+          const expDate = new Date(data.expires).toLocaleDateString(undefined, { year:'numeric', month:'short', day:'numeric' });
+          resultEl.className = 'alert alert-success py-2';
+          resultEl.innerHTML = `<i class="bi bi-check-circle me-2"></i><strong>Token generated and saved!</strong> Expires <strong>${expDate}</strong>.`;
+        } else {
+          setProgress(100, '<i class="bi bi-x-circle-fill me-1"></i>Failed');
+          document.getElementById('genTokenBar').classList.replace('bg-warning', 'bg-danger');
+          resultEl.className = 'alert alert-danger py-2';
+          resultEl.innerHTML = `<i class="bi bi-x-circle me-2"></i><strong>Error:</strong> ${data.error}`;
+        }
+      } catch (err) {
+        setProgress(100, '<i class="bi bi-x-circle-fill me-1"></i>Request failed');
+        document.getElementById('genTokenBar').classList.replace('bg-warning', 'bg-danger');
+        resultEl.className = 'alert alert-danger py-2';
+        resultEl.innerHTML = `<i class="bi bi-x-circle me-2"></i><strong>Error:</strong> ${err.message}`;
+      } finally {
+        resultEl.style.display = 'block';
+        btn.disabled = false;
+        btn.innerHTML = '<i class="bi bi-key me-1"></i>Generate';
+        setTimeout(() => {
+          progressEl.style.display = 'none';
+          document.getElementById('genTokenBar').classList.add('progress-bar-animated');
+          document.getElementById('genTokenBar').classList.replace('bg-success', 'bg-warning');
+          document.getElementById('genTokenBar').classList.replace('bg-danger', 'bg-warning');
+        }, 4000);
+      }
+    });
+    // ─────────────────────────────────────────────────────────────────────────
+
+    document.getElementById('testBtn').addEventListener('click', async function() {
+      const btn = this;
+      const resultDiv = document.getElementById('testResult');
+      
+      // Disable button and show loading
+      btn.disabled = true;
+      btn.innerHTML = '<span class="spinner-border spinner-border-sm me-2"></span>Testing...';
+      resultDiv.style.display = 'none';
+      
+      // Get form data
+      const formData = new FormData(document.querySelector('form'));
+      
+      try {
+        const response = await fetch('/test', {
+          method: 'POST',
+          body: formData
+        });
+        
+        const data = await response.json();
+        
+        if (data.success) {
+          resultDiv.className = 'alert alert-success';
+          resultDiv.innerHTML = `
+            <i class="bi bi-check-circle me-2"></i>
+            <strong>Success!</strong> ${data.message}
+            <div class="mt-2 small">${data.stats.replace(/\n/g, '<br>')}</div>
+          `;
+        } else {
+          resultDiv.className = 'alert alert-danger';
+          resultDiv.innerHTML = `
+            <i class="bi bi-x-circle me-2"></i>
+            <strong>Error:</strong> ${data.error}
+          `;
+        }
+      } catch (error) {
+        resultDiv.className = 'alert alert-danger';
+        resultDiv.innerHTML = `
+          <i class="bi bi-x-circle me-2"></i>
+          <strong>Error:</strong> ${error.message}
+        `;
+      } finally {
+        // Re-enable button
+        btn.disabled = false;
+        btn.innerHTML = '<i class="bi bi-send me-2"></i>Test Webhook';
+        resultDiv.style.display = 'block';
+      }
+    });
+  </script>
+</body>
+</html>

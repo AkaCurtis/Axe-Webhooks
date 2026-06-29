@@ -1,0 +1,54 @@
+manifestVersion: 1
+
+id: axe-webhooks
+name: ATH Monitor
+tagline: Worker ATH Discord alerts
+icon: https://raw.githubusercontent.com/AkaCurtis/Axe-Webhooks/main/axe-webhooks/ATH-logo.png
+category: Development
+version: "0.9.4"
+port: 3456
+
+description: >-
+  Monitor your mining workers and get instant Discord notifications when they hit new all-time high shares! 
+  
+  
+  ATH Monitor tracks your solo mining workers across multiple chains (BCH, XEC, BTC, DBG, BC2, BCH2) and 
+  sends beautiful Discord notifications whenever a worker achieves a new personal best share. Perfect for 
+  solo miners who want to stay informed about their workers' performance and celebrate those exciting 
+  near-block moments.
+  
+  
+  Features:
+  
+  - Real-time monitoring of worker best shares across multiple chains
+  
+  - Beautiful Discord embed notifications with progress bars
+  
+  - Special celebration messages when workers hit blocks (100%+)
+  
+  - Easy web-based configuration interface
+  
+  - Pre-configured Umbrel authentication (no token setup required)
+  
+  - Support for multi-algo pools (SHA256, Scrypt)
+  
+  - Auto-detection of Umbrel IP address
+
+developer: Curtis
+repo: https://github.com/AkaCurtis/Axe-Webhooks
+support: https://github.com/AkaCurtis/Axe-Webhooks/issues
+gallery: []
+releaseNotes: >-
+  Version 0.9.4
+  - Added support for POWPOW chain and its logo in notifications.
+path: ""
+defaultUsername: ""
+defaultPassword: ""
+
+services:
+  - id: web
+    name: Settings UI
+    description: Configure endpoints + webhook
+  - id: watcher
+    name: Watcher
+    description: Background monitor

@@ -1,0 +1,45 @@
+version: '3.7'
+services:
+  app_proxy:
+    environment:
+      APP_HOST: web
+      APP_PORT: 3456
+    depends_on:
+      - web
+    container_name: axe-webhooks_app_proxy_1
+  web:
+    image: ghcr.io/akacurtis/axe-webhooks-web:latest
+    init: true
+    restart: always
+    stop_grace_period: 1m
+    volumes:
+      - ${APP_DATA_DIR}:/data
+      - /opt/umbrel/umbrel/app-data:/umbrel-app-data:ro
+      - /home/umbrel/umbrel/app-data:/umbrel-app-data-host:ro
+    environment:
+      ADMIN_PASSWORD: ${APP_AXE_WEBHOOKS_ADMIN_PASSWORD:-}
+    healthcheck:
+      test:
+        - CMD
+        - python
+        - '-c'
+        - >-
+          import socket; s = socket.socket(socket.AF_INET, socket.SOCK_STREAM);
+          s.connect(('127.0.0.1', 3456)); s.close()
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+    container_name: axe-webhooks_web_1
+  watcher:
+    image: ghcr.io/akacurtis/axe-webhooks-watcher:latest
+    init: true
+    restart: always
+    stop_grace_period: 1m
+    volumes:
+      - ${APP_DATA_DIR}:/data
+    environment:
+      POLL_SECONDS: ${APP_AXE_WEBHOOKS_POLL_SECONDS:-15}
+    depends_on:
+      - web
+    container_name: axe-webhooks_watcher_1
