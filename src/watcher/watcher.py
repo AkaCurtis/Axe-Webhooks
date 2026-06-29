@@ -88,20 +88,19 @@ def load_config() -> Dict[str, str]:
         result["dbg_base"] = ""
 
     # Migrate legacy powpow_url key → powpow_ip
-    powpow_ip = defaults["powpow_ip"]
-    if not powpow_ip:
+    powpow = defaults["powpow_ip"]
+    if not powpow:
         legacy = defaults.get("powpow_url", "")
         if legacy:
-            # Strip protocol and trailing port if user stored a full URL before
-            legacy = legacy.replace("https://", "").replace("http://", "")
-            legacy = legacy.split(":")[0]  # drop any port
-            powpow_ip = legacy.strip()
+            powpow = legacy.strip()
 
-    # Strip protocol in case user typed it into the IP field
-    powpow_ip = powpow_ip.replace("https://", "").replace("http://", "").strip().rstrip("/")
+    powpow = powpow.strip().rstrip("/")
 
-    if powpow_ip:
-        result["powpow_base"] = f"http://{powpow_ip}:21221"
+    if powpow:
+        if powpow.startswith("http://") or powpow.startswith("https://"):
+            result["powpow_base"] = powpow
+        else:
+            result["powpow_base"] = f"http://{powpow}:21221"
     else:
         result["powpow_base"] = ""
 
