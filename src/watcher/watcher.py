@@ -275,12 +275,35 @@ def discord_post_ath(display: str, bestever: int, worker_data: Dict[str, Any],
     ratio = float(bestever) / float(diff_int) if diff_int else 0.0
     bar_text = progress_bar(ratio)
 
-    fields = [
-        {"name": "🏷 Worker", "value": f"**{display}**", "inline": True},
-        {"name": "🎯 Best Share", "value": f"`{best_formatted}`", "inline": True},
-        {"name": "⛏ Block Diff", "value": f"`{diff_formatted}`", "inline": True},
-        {"name": "📈 Progress to Block", "value": bar_text, "inline": False},
-    ]
+    # PowPow: dual-algo progress bars (LTC + DOGE merged mining)
+    if chain == "POWPOW":
+        ltc_diff_val = pool_data.get("ltc_diff", 0)
+        doge_diff_val = pool_data.get("doge_diff", 0)
+        ltc_diff_int = int(float(ltc_diff_val)) if ltc_diff_val else diff_int
+        doge_diff_int = int(float(doge_diff_val)) if doge_diff_val else None
+        ltc_ratio = float(bestever) / float(ltc_diff_int) if ltc_diff_int else 0.0
+        doge_ratio = float(bestever) / float(doge_diff_int) if doge_diff_int else 0.0
+        ltc_bar = progress_bar(ltc_ratio)
+        doge_bar = progress_bar(doge_ratio)
+        ltc_diff_fmt = format_mining_number(ltc_diff_int) if ltc_diff_int else "\u2014"
+        doge_diff_fmt = format_mining_number(doge_diff_int) if doge_diff_int else "\u2014"
+        ratio = max(ltc_ratio, doge_ratio)
+        fields = [
+            {"name": "\U0001f3f7 Worker", "value": f"**{display}**", "inline": True},
+            {"name": "\U0001f3af Best Share", "value": f"`{best_formatted}`", "inline": True},
+            {"name": "\u200b", "value": "\u200b", "inline": True},
+            {"name": "\u26cf LTC Diff", "value": f"`{ltc_diff_fmt}`", "inline": True},
+            {"name": "\U0001f4c8 LTC Progress", "value": ltc_bar, "inline": False},
+            {"name": "\u26cf DOGE Diff", "value": f"`{doge_diff_fmt}`", "inline": True},
+            {"name": "\U0001f4c8 DOGE Progress", "value": doge_bar, "inline": False},
+        ]
+    else:
+        fields = [
+            {"name": "\U0001f3f7 Worker", "value": f"**{display}**", "inline": True},
+            {"name": "\U0001f3af Best Share", "value": f"`{best_formatted}`", "inline": True},
+            {"name": "\u26cf Block Diff", "value": f"`{diff_formatted}`", "inline": True},
+            {"name": "\U0001f4c8 Progress to Block", "value": bar_text, "inline": False},
+        ]
 
     # Check if worker hit 100% (found a block!)
     if ratio >= 1.0:
@@ -677,7 +700,17 @@ def monitor_chain_powpow():
             pool_public = status_data.get("poolPublic", {})
             if not pool_public.get("ok"):
                 raise RuntimeError("poolPublic reported not ok")
-            pool_data = pool_public.get("data", {})
+            pool_data = dict(pool_public.get("data", {}))
+
+            # Inject per-algo diffs from timeseries for dual progress bars
+            try:
+                samples = status_data.get("timeseries", {}).get("samples", [])
+                if samples:
+                    latest = samples[-1]
+                    pool_data["ltc_diff"] = latest.get("ltcDiff", 0)
+                    pool_data["doge_diff"] = latest.get("dogeDiff", 0)
+            except Exception:
+                pass
 
             workers_public = status_data.get("poolWorkersPublic", {})
             if not workers_public.get("ok"):
