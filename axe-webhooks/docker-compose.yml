@@ -1,4 +1,3 @@
-version: '3.7'
 services:
   app_proxy:
     environment:
@@ -6,7 +5,7 @@ services:
       APP_PORT: 3456
     depends_on:
       - web
-    container_name: axe-webhooks_app_proxy_1
+
   web:
     image: ghcr.io/akacurtis/axe-webhooks-web:latest
     init: true
@@ -22,7 +21,7 @@ services:
       test:
         - CMD
         - python
-        - '-c'
+        - "-c"
         - >-
           import socket; s = socket.socket(socket.AF_INET, socket.SOCK_STREAM);
           s.connect(('127.0.0.1', 3456)); s.close()
@@ -30,7 +29,7 @@ services:
       timeout: 10s
       retries: 3
       start_period: 10s
-    container_name: axe-webhooks_web_1
+
   watcher:
     image: ghcr.io/akacurtis/axe-webhooks-watcher:latest
     init: true
@@ -42,4 +41,3 @@ services:
       POLL_SECONDS: ${APP_AXE_WEBHOOKS_POLL_SECONDS:-15}
     depends_on:
       - web
-    container_name: axe-webhooks_watcher_1
