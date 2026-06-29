@@ -191,15 +191,23 @@
               </label>
               <input name="dbg_port" value="{{ cfg.dbg_port }}" class="form-control" placeholder="21213" type="number"/>
             </div>
+          </div>
 
-            <div class="col-md-4 col-sm-6">
-              <label class="form-label form-label-sm">
-                <span class="crypto-badge badge-powpow">POWPOW</span>
-              </label>
-              <input name="powpow_port" value="{{ cfg.powpow_port }}" class="form-control" placeholder="21221" type="number"/>
+          <div class="mt-3">
+            <label class="form-label">
+              <i class="bi bi-plug"></i> PowPow Pool
+            </label>
+            <div class="input-group">
+              <span class="input-group-text"><span class="crypto-badge badge-powpow">POWPOW</span></span>
+              <input name="powpow_url" value="{{ cfg.powpow_url }}" class="form-control" placeholder="http://185.147.157.78:21221"/>
             </div>
+            <div class="hint-text">
+              <i class="bi bi-info-circle me-1"></i>Full URL — PowPow runs on its own external host, not the base URL above
+            </div>
+          </div>
 
-            <div class="col-12 mt-3">
+          <div class="row g-3 mt-3">
+            <div class="col-12">
               <label class="form-label">
                 <i class="bi bi-folder"></i> BC2 & BCH2 (Path or Port)
               </label>
