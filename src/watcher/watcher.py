@@ -182,13 +182,16 @@ def summarize_names(names: list[str], limit: int = 5) -> str:
     return ", ".join(pretty_names) + suffix
 
 
-def get_json(url: str, proxy_token: str) -> Dict[str, Any]:
+def get_json(url: str, proxy_token: str, bypass_proxy: bool = False) -> Dict[str, Any]:
     cookies = {"UMBREL_PROXY_TOKEN": proxy_token} if proxy_token else None
+    # bypass_proxy=True disables any HTTP_PROXY env var (needed for direct external URLs)
+    proxies = {"http": None, "https": None} if bypass_proxy else None
     r = requests.get(
         url,
         cookies=cookies,
         headers={"Accept": "application/json"},
         timeout=15,
+        proxies=proxies,
     )
 
     try:
@@ -668,7 +671,8 @@ def monitor_chain_powpow():
             log(f"Polling {powpow_base}", chain)
 
             # No Umbrel proxy token needed — PowPow is a direct external URL
-            status_data = get_json(status_url, "")
+            # bypass_proxy=True ensures HTTP_PROXY env var is ignored
+            status_data = get_json(status_url, "", bypass_proxy=True)
 
             pool_public = status_data.get("poolPublic", {})
             if not pool_public.get("ok"):

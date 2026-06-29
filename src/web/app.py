@@ -226,7 +226,9 @@ def test_webhook():
     if powpow_base:
         try:
             status_resp = requests.get(
-                f"{powpow_base}/api/status", timeout=10
+                f"{powpow_base}/api/status",
+                timeout=10,
+                proxies={"http": None, "https": None},
             )
             status_resp.raise_for_status()
             status_data = status_resp.json()
