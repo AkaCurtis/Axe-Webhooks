@@ -68,8 +68,8 @@ The **PowPow IP** field accepts either a plain IP or a full URL:
 
 | What you enter | What the app uses |
 |---|---|
-| `185.147.157.78` | `http://185.147.157.78:21221` |
-| `http://185.147.157.78:21221` | `http://185.147.157.78:21221` |
+| `203.0.113.42` | `http://203.0.113.42:21221` |
+| `http://203.0.113.42:21221` | `http://203.0.113.42:21221` |
 | `http://hostname:3000` | `http://hostname:3000` |
 
 If you leave it blank, the app defaults to `http://willitmod-dev-powpow_app_1:3000` (the internal Docker service name for PowPow running on the same Umbrel).
