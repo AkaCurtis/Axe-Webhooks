@@ -44,7 +44,7 @@ def load_config() -> Dict[str, str]:
         "dbg_algos": "sha256,scrypt",
         "proxy_token": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJwcm94eVRva2VuIjp0cnVlLCJpYXQiOjE3NzkzODg0NDgsImV4cCI6MTgxMDkyNDQ0OH0.o20tIwVo03PvOJCG9ijLW-1XD3Pcy9bfKpP33vYL90U",
         "discord_webhook": "",
-        "powpow_url": "",
+        "powpow_port": "",
     }
 
     try:
@@ -86,7 +86,10 @@ def load_config() -> Dict[str, str]:
     else:
         result["dbg_base"] = ""
 
-    result["powpow_url"] = defaults["powpow_url"]
+    if defaults["powpow_port"]:
+        result["powpow_base"] = f"{base_url}:{defaults['powpow_port']}"
+    else:
+        result["powpow_base"] = ""
 
     # Handle BC2 and BCH2 with path or port
     bc2_path = defaults["bc2_path"]
@@ -638,17 +641,17 @@ def monitor_chain_powpow():
         try:
             cfg = load_config()
 
-            powpow_url = cfg.get("powpow_url", "").strip()
+            powpow_base = cfg.get("powpow_base", "").strip()
             webhook = cfg["discord_webhook"]
 
-            if not powpow_url:
+            if not powpow_base:
                 log("Skipping poll because no URL is configured", chain)
                 time.sleep(POLL_SECONDS)
                 continue
 
             # PowPow exposes everything in a single /api/status endpoint
-            status_url = f"{powpow_url.rstrip('/')}/api/status"
-            log(f"Polling {powpow_url}", chain)
+            status_url = f"{powpow_base.rstrip('/')}/api/status"
+            log(f"Polling {powpow_base}", chain)
 
             # No Umbrel proxy token needed — PowPow is a direct external URL
             status_data = get_json(status_url, "")
