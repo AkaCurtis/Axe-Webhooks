@@ -221,8 +221,7 @@ def test_webhook():
             })
 
     # --- PowPow pool (/api/status single endpoint, external host) ---
-    powpow_ip = cfg.get("powpow_ip", "").strip()
-    powpow_base = f"http://{powpow_ip}:21221" if powpow_ip else ""
+    powpow_base = cfg.get("powpow_ip", "").strip().rstrip("/")
     if powpow_base:
         try:
             session = requests.Session()
