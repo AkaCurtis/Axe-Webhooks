@@ -184,14 +184,15 @@ def summarize_names(names: list[str], limit: int = 5) -> str:
 
 def get_json(url: str, proxy_token: str, bypass_proxy: bool = False) -> Dict[str, Any]:
     cookies = {"UMBREL_PROXY_TOKEN": proxy_token} if proxy_token else None
-    # bypass_proxy=True disables any HTTP_PROXY env var (needed for direct external URLs)
-    proxies = {"http": None, "https": None} if bypass_proxy else None
-    r = requests.get(
+    session = requests.Session()
+    if bypass_proxy:
+        # Fully ignore HTTP_PROXY / HTTPS_PROXY env vars set by Umbrel
+        session.trust_env = False
+    r = session.get(
         url,
         cookies=cookies,
         headers={"Accept": "application/json"},
         timeout=15,
-        proxies=proxies,
     )
 
     try:

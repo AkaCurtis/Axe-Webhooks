@@ -225,10 +225,11 @@ def test_webhook():
     powpow_base = f"http://{powpow_ip}:21221" if powpow_ip else ""
     if powpow_base:
         try:
-            status_resp = requests.get(
+            session = requests.Session()
+            session.trust_env = False  # bypass Umbrel HTTP_PROXY env var
+            status_resp = session.get(
                 f"{powpow_base}/api/status",
                 timeout=10,
-                proxies={"http": None, "https": None},
             )
             status_resp.raise_for_status()
             status_data = status_resp.json()
