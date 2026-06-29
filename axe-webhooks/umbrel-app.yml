@@ -5,7 +5,7 @@ name: ATH Monitor
 tagline: Worker ATH Discord alerts
 icon: https://raw.githubusercontent.com/AkaCurtis/Axe-Webhooks/main/axe-webhooks/ATH-logo.png
 category: Development
-version: "1.0.2"
+version: "1.0.3"
 port: 3456
 
 description: >-
@@ -39,7 +39,8 @@ repo: https://github.com/AkaCurtis/Axe-Webhooks
 support: https://github.com/AkaCurtis/Axe-Webhooks/issues
 gallery: []
 releaseNotes: >-
-  - I dislike powpow v2
+  - PowPow Added
+  - Might break idk, if it does let me know!
 path: ""
 defaultUsername: ""
 defaultPassword: ""

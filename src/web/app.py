@@ -221,7 +221,11 @@ def test_webhook():
             })
 
     # --- PowPow pool (/api/status single endpoint, external host) ---
-    powpow_base = cfg.get("powpow_ip", "").strip().rstrip("/")
+    DEFAULT_POWPOW_URL = "http://willitmod-dev-powpow_app_1:3000"
+    powpow_base = (
+        cfg.get("powpow_ip", "").strip()
+        or DEFAULT_POWPOW_URL
+    ).rstrip("/")
     if powpow_base:
         try:
             session = requests.Session()
@@ -259,10 +263,30 @@ def test_webhook():
             hashrate_fmt = format_num(hashrate_hs) + "H/s"
             diff_fmt = format_num(network_diff)
 
+            # Extract per-algo difficulties from timeseries if available
+            ltc_diff = 0
+            doge_diff = 0
+            try:
+                samples = status_data.get("timeseries", {}).get("samples", [])
+                if samples:
+                    latest = samples[-1]
+                    ltc_diff = latest.get("ltcDiff", 0)
+                    doge_diff = latest.get("dogeDiff", 0)
+            except Exception:
+                pass
+
+            ltc_diff_fmt = format_num(ltc_diff) if ltc_diff else diff_fmt
+            doge_diff_fmt = format_num(doge_diff) if doge_diff else "\u2014"
+
             stats_summary.append(f"**POWPOW**: {workers_count} workers, {hashrate_fmt}")
             fields.append({
                 "name": f"{'\u2705' if workers_count > 0 else '\u26a0\ufe0f'} POWPOW Pool",
-                "value": f"\U0001f477 **Workers:** {workers_count}\n\u26a1 **Hashrate:** {hashrate_fmt}\n\U0001f3af **Difficulty (LTC):** {diff_fmt}",
+                "value": (
+                    f"\U0001f477 **Workers:** {workers_count}\n"
+                    f"\u26a1 **Hashrate:** {hashrate_fmt}\n"
+                    f"\U0001f3af **Difficulty (LTC):** {ltc_diff_fmt}\n"
+                    f"\U0001f3af **Difficulty (DOGE):** {doge_diff_fmt}"
+                ),
                 "inline": True
             })
         except Exception as e:
